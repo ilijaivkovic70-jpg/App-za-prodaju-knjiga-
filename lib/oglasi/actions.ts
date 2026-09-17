@@ -130,3 +130,152 @@ export async function kreirajOglas(formData: FormData): Promise<OglasRezultat> {
   revalidatePath("/", "layout");
   return { success: true };
 }
+
+export async function azurirajOglas(formData: FormData): Promise<OglasRezultat> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/prijava");
+  }
+
+  const oglasId = String(formData.get("oglas_id") ?? "");
+  const besplatno = formData.get("besplatno") === "on";
+  const cenaRaw = String(formData.get("cena") ?? "").trim();
+  const opis = String(formData.get("opis") ?? "").trim();
+  const slika = formData.get("slika");
+
+  if (!oglasId) {
+    return { error: "Nedostaje oglas." };
+  }
+  if (!besplatno && !cenaRaw) {
+    return { error: "Upiši cenu ili označi da je besplatno." };
+  }
+  const cena = besplatno ? null : Number(cenaRaw.replace(",", "."));
+  if (!besplatno && (Number.isNaN(cena as number) || (cena as number) <= 0)) {
+    return { error: "Cena mora biti pozitivan broj." };
+  }
+  const imaSliku = slika instanceof File && slika.size > 0;
+  if (imaSliku) {
+    if (!(slika as File).type.startsWith("image/")) {
+      return { error: "Fajl mora biti slika." };
+    }
+    if ((slika as File).size > MAX_SLIKA_BAJTOVA) {
+      return { error: "Slika ne sme biti veća od 5MB." };
+    }
+  }
+
+  const izmene: Record<string, unknown> = {
+    besplatno,
+    cena,
+    opis: opis || null,
+  };
+
+  if (imaSliku) {
+    const slikaFajl = slika as File;
+    const ekstenzija = slikaFajl.name.split(".").pop()?.toLowerCase() || "jpg";
+    const putanja = `${user.id}/${crypto.randomUUID()}.${ekstenzija}`;
+
+    const { error: uploadGreska } = await supabase.storage
+      .from("oglasi-slike")
+      .upload(putanja, slikaFajl, { contentType: slikaFajl.type });
+
+    if (uploadGreska) {
+      return { error: "Došlo je do greške pri otpremanju slike." };
+    }
+
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("oglasi-slike").getPublicUrl(putanja);
+    izmene.slika_url = publicUrl;
+  }
+
+  const { error: oglasGreska } = await supabase
+    .from("oglasi")
+    .update(izmene)
+    .eq("id", oglasId)
+    .eq("korisnik_id", user.id);
+
+  if (oglasGreska) {
+    return { error: "Došlo je do greške pri čuvanju izmena." };
+  }
+
+  revalidatePath("/", "layout");
+  return { success: true };
+}
+
+export async function promeniStatusOglasa(formData: FormData): Promise<OglasRezultat> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/prijava");
+  }
+
+  const oglasId = String(formData.get("oglas_id") ?? "");
+  const status = String(formData.get("status") ?? "");
+
+  if (!oglasId || !["aktivan", "prodato", "neaktivan"].includes(status)) {
+    return { error: "Nevažeći zahtev." };
+  }
+
+  const { error } = await supabase
+    .from("oglasi")
+    .update({ status })
+    .eq("id", oglasId)
+    .eq("korisnik_id", user.id);
+
+  if (error) {
+    return { error: "Došlo je do greške pri promeni statusa." };
+  }
+
+  revalidatePath("/", "layout");
+  return { success: true };
+}
+
+export async function obrisiOglas(formData: FormData): Promise<OglasRezultat> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/prijava");
+  }
+
+  const oglasId = String(formData.get("oglas_id") ?? "");
+  if (!oglasId) {
+    return { error: "Nedostaje oglas." };
+  }
+
+  const { data: oglas } = await supabase
+    .from("oglasi")
+    .select("slika_url")
+    .eq("id", oglasId)
+    .eq("korisnik_id", user.id)
+    .maybeSingle();
+
+  const { error } = await supabase
+    .from("oglasi")
+    .delete()
+    .eq("id", oglasId)
+    .eq("korisnik_id", user.id);
+
+  if (error) {
+    return { error: "Došlo je do greške pri brisanju oglasa." };
+  }
+
+  if (oglas?.slika_url) {
+    const putanja = oglas.slika_url.split("/oglasi-slike/")[1];
+    if (putanja) {
+      await supabase.storage.from("oglasi-slike").remove([putanja]);
+    }
+  }
+
+  revalidatePath("/", "layout");
+  return { success: true };
+}
