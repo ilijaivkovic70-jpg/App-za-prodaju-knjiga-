@@ -11,7 +11,7 @@ const NAV_LINKOVI = [
   { href: "/sta-mi-treba", naziv: "Šta mi treba" },
 ];
 
-export function MobileNav() {
+export function MobileNav({ jeAdmin = false }: { jeAdmin?: boolean }) {
   const [otvoreno, setOtvoreno] = useState(false);
 
   return (
@@ -36,6 +36,15 @@ export function MobileNav() {
               {link.naziv}
             </Link>
           ))}
+          {jeAdmin && (
+            <Link
+              href="/admin"
+              onClick={() => setOtvoreno(false)}
+              className="text-foreground/80 hover:text-primary"
+            >
+              Admin
+            </Link>
+          )}
         </nav>
       )}
     </div>

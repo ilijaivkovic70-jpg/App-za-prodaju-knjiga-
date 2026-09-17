@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { jeAdminEmail } from "@/lib/admin/auth";
 import { LogoutDugme } from "@/components/logout-dugme";
 import { MobileNav } from "@/components/mobile-nav";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ export async function Navbar() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  const jeAdmin = jeAdminEmail(user?.email);
 
   return (
     <header className="relative border-b bg-background">
@@ -33,10 +35,18 @@ export async function Navbar() {
               {link.naziv}
             </Link>
           ))}
+          {jeAdmin && (
+            <Link
+              href="/admin"
+              className="text-foreground/80 transition-colors hover:text-primary"
+            >
+              Admin
+            </Link>
+          )}
         </nav>
 
         <div className="flex items-center gap-3">
-          <MobileNav />
+          <MobileNav jeAdmin={jeAdmin} />
           {user ? (
             <>
               <Button render={<Link href="/oglasi/novi" />} size="sm">
