@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { MojOglasKartica, type MojOglas } from "@/components/moj-oglas-kartica";
+import { Button } from "@/components/ui/button";
 
 export default async function MojProfilPage() {
   const supabase = await createClient();
@@ -28,9 +30,14 @@ export default async function MojProfilPage() {
           ))}
         </div>
       ) : (
-        <p className="py-12 text-center text-muted-foreground">
-          Još uvek nemaš postavljenih oglasa.
-        </p>
+        <div className="flex flex-col items-center gap-3 py-12 text-center">
+          <p className="text-muted-foreground">
+            Još uvek nemaš postavljenih oglasa.
+          </p>
+          <Button render={<Link href="/oglasi/novi" />} variant="outline">
+            Postavi prvi oglas
+          </Button>
+        </div>
       )}
     </main>
   );

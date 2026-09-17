@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { LogoutDugme } from "@/components/logout-dugme";
+import { MobileNav } from "@/components/mobile-nav";
 import { Button } from "@/components/ui/button";
 
 const NAV_LINKOVI = [
@@ -16,7 +17,7 @@ export async function Navbar() {
   } = await supabase.auth.getUser();
 
   return (
-    <header className="border-b bg-background">
+    <header className="relative border-b bg-background">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
         <Link href="/" className="text-lg font-bold text-foreground">
           Knjige<span className="text-primary">za</span>Studente
@@ -35,6 +36,7 @@ export async function Navbar() {
         </nav>
 
         <div className="flex items-center gap-3">
+          <MobileNav />
           {user ? (
             <>
               <Button render={<Link href="/oglasi/novi" />} size="sm">

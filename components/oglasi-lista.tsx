@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { OglasKartica, type OglasZaKarticu } from "@/components/oglas-kartica";
@@ -65,10 +66,21 @@ export function OglasiLista({
   }
 
   if (oglasi.length === 0) {
+    const imaAktivneFiltere = Object.values(filteri).some(
+      (vrednost) => vrednost !== null && vrednost !== ""
+    );
+
     return (
-      <p className="py-12 text-center text-muted-foreground">
-        Trenutno nema aktivnih oglasa.
-      </p>
+      <div className="flex flex-col items-center gap-3 py-12 text-center">
+        <p className="text-muted-foreground">
+          {imaAktivneFiltere
+            ? "Nema oglasa za izabrane filtere. Probaj da ih promeniš ili budi prvi koji će postaviti."
+            : "Trenutno nema aktivnih oglasa. Budi prvi koji će postaviti."}
+        </p>
+        <Button render={<Link href="/oglasi/novi" />} variant="outline">
+          Postavi oglas
+        </Button>
+      </div>
     );
   }
 
