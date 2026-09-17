@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { OcenaForma } from "@/components/ocena-forma";
 
 const NAZIVI_TIPOVA: Record<string, string> = {
   knjiga: "Knjiga",
@@ -65,6 +66,17 @@ export default async function OglasDetaljPage({
   if (user && !jeVlasnik) {
     const { data } = await supabase.rpc("email_prodavca", { oglas_id: oglas.id });
     prodavacEmail = data ?? null;
+  }
+
+  let mozeDaOceni = false;
+  if (user && !jeVlasnik && oglas.status === "prodato") {
+    const { data: postojecaOcena } = await supabase
+      .from("ocene")
+      .select("id")
+      .eq("oglas_id", oglas.id)
+      .eq("ocenio_id", user.id)
+      .maybeSingle();
+    mozeDaOceni = !postojecaOcena;
   }
 
   const predmetNaziv = jedanNaziv(oglas.predmeti);
@@ -180,6 +192,17 @@ export default async function OglasDetaljPage({
                 Prijavi se da kontaktiraš prodavca
               </Button>
             ))}
+
+          {mozeDaOceni && (
+            <Card>
+              <CardContent className="flex flex-col gap-4">
+                <p className="text-sm font-semibold">
+                  Oceni prodavca za ovaj oglas
+                </p>
+                <OcenaForma oglasId={oglas.id} />
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </main>
