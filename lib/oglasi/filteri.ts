@@ -8,6 +8,16 @@ export type OglasiFilteri = {
   pretraga: string | null;
 };
 
+export const PRAZNI_FILTERI: OglasiFilteri = {
+  smerId: null,
+  godina: null,
+  predmetId: null,
+  tip: null,
+  cenaMin: null,
+  cenaMax: null,
+  pretraga: null,
+};
+
 const VALIDNI_TIPOVI = [
   "knjiga",
   "skripta",
