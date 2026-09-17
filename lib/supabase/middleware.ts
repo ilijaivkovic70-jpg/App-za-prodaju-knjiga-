@@ -52,8 +52,19 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // TODO (korak 1.1): kad app/onboarding/page.tsx bude gotov, ovde proveriti
-  // da li ulogovan korisnik ima red u `profiles` i ako nema, redirect na /onboarding.
+  if (user && putanja !== "/onboarding" && !AUTH_RUTE.includes(putanja)) {
+    const { data: profil } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (!profil) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/onboarding";
+      return NextResponse.redirect(url);
+    }
+  }
 
   return response;
 }

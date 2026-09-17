@@ -37,6 +37,9 @@ export async function Navbar() {
         <div className="flex items-center gap-3">
           {user ? (
             <>
+              <Button render={<Link href="/oglasi/novi" />} size="sm">
+                Postavi oglas
+              </Button>
               <Link
                 href="/moj-profil"
                 className="hidden text-sm text-muted-foreground hover:text-foreground sm:inline"

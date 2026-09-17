@@ -19,6 +19,9 @@ function mapirajGresku(poruka: string): string {
   if (poruka.includes("Password should be at least")) {
     return "Lozinka mora imati najmanje 6 karaktera.";
   }
+  if (poruka.includes("email rate limit exceeded")) {
+    return "Previše pokušaja slanja email-a u kratkom periodu. Sačekaj malo pa pokušaj ponovo.";
+  }
   return "Došlo je do greške. Pokušajte ponovo.";
 }
 
