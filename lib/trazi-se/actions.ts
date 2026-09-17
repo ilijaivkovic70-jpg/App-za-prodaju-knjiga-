@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { posaljiMatchObavestenja } from "@/lib/matching/matching";
 
 export async function sacuvajPotragu(formData: FormData): Promise<void> {
   const supabase = await createClient();
@@ -17,10 +18,18 @@ export async function sacuvajPotragu(formData: FormData): Promise<void> {
 
   if (!smerId || !predmetId || !godinaRaw || Number.isNaN(godina)) return;
 
-  await supabase.from("trazi_se").insert({
-    korisnik_id: user.id,
-    predmet_id: predmetId,
-    godina,
-    smer_id: smerId,
-  });
+  const { data: potraga } = await supabase
+    .from("trazi_se")
+    .insert({
+      korisnik_id: user.id,
+      predmet_id: predmetId,
+      godina,
+      smer_id: smerId,
+    })
+    .select("id")
+    .single();
+
+  if (potraga) {
+    await posaljiMatchObavestenja(supabase, potraga.id);
+  }
 }

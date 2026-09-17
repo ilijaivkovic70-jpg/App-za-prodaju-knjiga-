@@ -34,7 +34,7 @@ export default async function OglasDetaljPage({
   const { data: oglas } = await supabase
     .from("oglasi")
     .select(
-      "id, tip, cena, besplatno, godina, opis, slika_url, status, korisnik_id, created_at, predmeti(naziv), smerovi(naziv)"
+      "id, tip, cena, besplatno, godina, opis, slika_url, status, korisnik_id, predmet_id, smer_id, created_at, predmeti(naziv), smerovi(naziv)"
     )
     .eq("id", id)
     .maybeSingle();
@@ -42,6 +42,12 @@ export default async function OglasDetaljPage({
   if (!oglas) {
     notFound();
   }
+
+  const { data: brojTrazenja } = await supabase.rpc("broj_trazenja", {
+    p_predmet_id: oglas.predmet_id,
+    p_godina: oglas.godina,
+    p_smer_id: oglas.smer_id,
+  });
 
   const { data: profil } = await supabase
     .from("profiles")
@@ -114,6 +120,11 @@ export default async function OglasDetaljPage({
               {smerNaziv ? `${smerNaziv}, ` : ""}
               {oglas.godina}. godina
             </p>
+            {Number(brojTrazenja ?? 0) > 0 && (
+              <p className="mt-1 text-sm font-medium text-primary">
+                {brojTrazenja} {Number(brojTrazenja) === 1 ? "student trenutno traži" : "studenata trenutno traži"} ovaj predmet
+              </p>
+            )}
           </div>
 
           <p className="text-[24px] font-bold text-primary">
