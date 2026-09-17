@@ -45,15 +45,18 @@ export function FilterBar({
 
   const cenaMinParam = searchParams.get("cena_min") ?? "";
   const cenaMaxParam = searchParams.get("cena_max") ?? "";
+  const pretragaParam = searchParams.get("pretraga") ?? "";
 
   const [cenaMin, setCenaMin] = useState(cenaMinParam);
   const [cenaMax, setCenaMax] = useState(cenaMaxParam);
+  const [pretraga, setPretraga] = useState(pretragaParam);
   const [sinhronizovanoSa, setSinhronizovanoSa] = useState(searchParams.toString());
 
   if (sinhronizovanoSa !== searchParams.toString()) {
     setSinhronizovanoSa(searchParams.toString());
     setCenaMin(cenaMinParam);
     setCenaMax(cenaMaxParam);
+    setPretraga(pretragaParam);
   }
 
   const predmetiZaSmerIGodinu = useMemo(
@@ -95,28 +98,46 @@ export function FilterBar({
     const timer = setTimeout(() => {
       const trenutniMin = searchParams.get("cena_min") ?? "";
       const trenutniMax = searchParams.get("cena_max") ?? "";
-      if (cenaMin !== trenutniMin || cenaMax !== trenutniMax) {
+      const trenutnaPretraga = searchParams.get("pretraga") ?? "";
+      if (
+        cenaMin !== trenutniMin ||
+        cenaMax !== trenutniMax ||
+        pretraga !== trenutnaPretraga
+      ) {
         postaviParametre({
           cena_min: cenaMin || null,
           cena_max: cenaMax || null,
+          pretraga: pretraga || null,
         });
       }
     }, 400);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cenaMin, cenaMax]);
+  }, [cenaMin, cenaMax, pretraga]);
 
   const imaAktivneFiltere =
-    smerId || godina || predmetId || tip || cenaMin || cenaMax;
+    smerId || godina || predmetId || tip || cenaMin || cenaMax || pretraga;
 
   function ocistiFiltere() {
     setCenaMin("");
     setCenaMax("");
+    setPretraga("");
     router.push(pathname, { scroll: false });
   }
 
   return (
     <div className="mb-6 flex flex-col gap-4 rounded-xl border bg-secondary p-4 sm:flex-row sm:flex-wrap sm:items-end">
+      <div className="flex flex-col gap-1.5 sm:w-64">
+        <Label htmlFor="filter_pretraga">Pretraga</Label>
+        <Input
+          id="filter_pretraga"
+          type="text"
+          placeholder="Predmet ili opis oglasa..."
+          value={pretraga}
+          onChange={(e) => setPretraga(e.target.value)}
+        />
+      </div>
+
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="filter_smer">Smer</Label>
         <Select

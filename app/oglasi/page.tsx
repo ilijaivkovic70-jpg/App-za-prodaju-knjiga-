@@ -2,7 +2,11 @@ import { createClient } from "@/lib/supabase/server";
 import { OglasiLista } from "@/components/oglasi-lista";
 import { FilterBar } from "@/components/filter-bar";
 import type { OglasZaKarticu } from "@/components/oglas-kartica";
-import { parsirajFiltere, primeniFiltereNaUpit } from "@/lib/oglasi/filteri";
+import {
+  dohvatiIdPredmetaZaPretragu,
+  parsirajFiltere,
+  primeniFiltereNaUpit,
+} from "@/lib/oglasi/filteri";
 
 const STRANA_VELICINA = 12;
 
@@ -13,6 +17,10 @@ export default async function OglasiPage({
 }) {
   const filteri = parsirajFiltere(await searchParams);
   const supabase = await createClient();
+
+  const predmetIdsZaPretragu = filteri.pretraga
+    ? await dohvatiIdPredmetaZaPretragu(supabase, filteri.pretraga)
+    : null;
 
   const [{ data: smerovi }, { data: predmeti }, { data: oglasi, count }] =
     await Promise.all([
@@ -29,7 +37,8 @@ export default async function OglasiPage({
             { count: "exact" }
           )
           .eq("status", "aktivan"),
-        filteri
+        filteri,
+        predmetIdsZaPretragu
       )
         .order("created_at", { ascending: false })
         .range(0, STRANA_VELICINA - 1),

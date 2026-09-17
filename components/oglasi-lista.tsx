@@ -4,7 +4,11 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { OglasKartica, type OglasZaKarticu } from "@/components/oglas-kartica";
-import { primeniFiltereNaUpit, type OglasiFilteri } from "@/lib/oglasi/filteri";
+import {
+  dohvatiIdPredmetaZaPretragu,
+  primeniFiltereNaUpit,
+  type OglasiFilteri,
+} from "@/lib/oglasi/filteri";
 
 const STRANA_VELICINA = 12;
 
@@ -31,6 +35,9 @@ export function OglasiLista({
   async function ucitajJos() {
     setUcitava(true);
     const supabase = createClient();
+    const predmetIdsZaPretragu = filteri.pretraga
+      ? await dohvatiIdPredmetaZaPretragu(supabase, filteri.pretraga)
+      : null;
     const upit = primeniFiltereNaUpit(
       supabase
         .from("oglasi")
@@ -38,7 +45,8 @@ export function OglasiLista({
           "id, tip, cena, besplatno, godina, slika_url, predmeti(naziv), smerovi(naziv)"
         )
         .eq("status", "aktivan"),
-      filteri
+      filteri,
+      predmetIdsZaPretragu
     );
     const { data } = await upit
       .order("created_at", { ascending: false })
