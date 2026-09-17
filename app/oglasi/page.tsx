@@ -22,32 +22,27 @@ export default async function OglasiPage({
     ? await dohvatiIdPredmetaZaPretragu(supabase, filteri.pretraga)
     : null;
 
-  const [{ data: smerovi }, { data: predmeti }, { data: oglasi, count }] =
-    await Promise.all([
-      supabase.from("smerovi").select("id, fakultet_id, naziv").order("naziv"),
+  const [{ data: smerovi }, { data: oglasi, count }] = await Promise.all([
+    supabase.from("smerovi").select("id, fakultet_id, naziv").order("naziv"),
+    primeniFiltereNaUpit(
       supabase
-        .from("predmeti")
-        .select("id, smer_id, godina, naziv")
-        .order("naziv"),
-      primeniFiltereNaUpit(
-        supabase
-          .from("oglasi")
-          .select(
-            "id, tip, cena, besplatno, godina, slika_url, predmeti(naziv), smerovi(naziv)",
-            { count: "exact" }
-          )
-          .eq("status", "aktivan"),
-        filteri,
-        predmetIdsZaPretragu
-      )
-        .order("created_at", { ascending: false })
-        .range(0, STRANA_VELICINA - 1),
-    ]);
+        .from("oglasi")
+        .select(
+          "id, tip, naziv, cena, besplatno, godina, slika_url, smerovi(naziv)",
+          { count: "exact" }
+        )
+        .eq("status", "aktivan"),
+      filteri,
+      predmetIdsZaPretragu
+    )
+      .order("created_at", { ascending: false })
+      .range(0, STRANA_VELICINA - 1),
+  ]);
 
   return (
     <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
       <h1 className="mb-6 text-[32px] font-bold">Oglasi</h1>
-      <FilterBar smerovi={smerovi ?? []} predmeti={predmeti ?? []} />
+      <FilterBar smerovi={smerovi ?? []} />
       <OglasiLista
         pocetniOglasi={(oglasi ?? []) as unknown as OglasZaKarticu[]}
         ukupno={count ?? 0}

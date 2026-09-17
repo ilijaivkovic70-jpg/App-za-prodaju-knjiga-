@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const NASLOV = "Studentska platforma za udžbenike";
+const NASLOV = "EKOF Knjige";
 const OPIS =
   "Kupovina i prodaja polovnih udžbenika, skripti i beleški za studente Ekonomskog fakulteta Beograd.";
 

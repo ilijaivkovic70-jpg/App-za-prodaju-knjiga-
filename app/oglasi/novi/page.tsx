@@ -19,15 +19,10 @@ export default async function NoviOglasPage() {
     redirect("/prijava");
   }
 
-  const [{ data: fakulteti }, { data: smerovi }, { data: predmeti }] =
-    await Promise.all([
-      supabase.from("fakulteti").select("id, naziv").order("naziv"),
-      supabase.from("smerovi").select("id, fakultet_id, naziv").order("naziv"),
-      supabase
-        .from("predmeti")
-        .select("id, smer_id, godina, naziv")
-        .order("naziv"),
-    ]);
+  const [{ data: smerovi }, { data: predmeti }] = await Promise.all([
+    supabase.from("smerovi").select("id, fakultet_id, naziv").order("naziv"),
+    supabase.from("predmeti").select("id, smer_id, godina, naziv").order("naziv"),
+  ]);
 
   return (
     <main className="flex flex-1 items-center justify-center p-6">
@@ -39,11 +34,7 @@ export default async function NoviOglasPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <OglasForma
-            fakulteti={fakulteti ?? []}
-            smerovi={smerovi ?? []}
-            predmeti={predmeti ?? []}
-          />
+          <OglasForma smerovi={smerovi ?? []} predmeti={predmeti ?? []} />
         </CardContent>
       </Card>
     </main>

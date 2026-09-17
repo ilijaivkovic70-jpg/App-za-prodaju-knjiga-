@@ -11,11 +11,11 @@ const DOZVOLJENI_TIPOVI = [
   "skripta",
   "beleske",
   "zbirka",
+  "komplet",
   "ostalo",
 ] as const;
 
 const MAX_SLIKA_BAJTOVA = 5 * 1024 * 1024;
-const NOVI_PREDMET_VREDNOST = "__novi__";
 
 export async function kreirajOglas(formData: FormData): Promise<OglasRezultat> {
   const supabase = await createClient();
@@ -28,11 +28,11 @@ export async function kreirajOglas(formData: FormData): Promise<OglasRezultat> {
   }
 
   const tip = String(formData.get("tip") ?? "");
-  const smerId = String(formData.get("smer_id") ?? "");
+  const naziv = String(formData.get("naziv") ?? "").trim();
+  const smerId = String(formData.get("smer_id") ?? "").trim();
   const godinaRaw = String(formData.get("godina") ?? "");
   const godina = Number(godinaRaw);
-  const predmetId = String(formData.get("predmet_id") ?? "");
-  const noviPredmetNaziv = String(formData.get("novi_predmet_naziv") ?? "").trim();
+  const predmetId = String(formData.get("predmet_id") ?? "").trim();
   const besplatno = formData.get("besplatno") === "on";
   const cenaRaw = String(formData.get("cena") ?? "").trim();
   const opis = String(formData.get("opis") ?? "").trim();
@@ -41,17 +41,11 @@ export async function kreirajOglas(formData: FormData): Promise<OglasRezultat> {
   if (!DOZVOLJENI_TIPOVI.includes(tip as (typeof DOZVOLJENI_TIPOVI)[number])) {
     return { error: "Izaberi tip materijala." };
   }
-  if (!smerId) {
-    return { error: "Izaberi smer." };
+  if (!naziv) {
+    return { error: "Upiši naziv oglasa." };
   }
   if (!godinaRaw || Number.isNaN(godina) || godina < 1 || godina > 6) {
     return { error: "Izaberi godinu." };
-  }
-  if (!predmetId) {
-    return { error: "Izaberi predmet." };
-  }
-  if (predmetId === NOVI_PREDMET_VREDNOST && !noviPredmetNaziv) {
-    return { error: "Upiši naziv predmeta." };
   }
   if (!besplatno && !cenaRaw) {
     return { error: "Upiši cenu ili označi da je besplatno." };
@@ -68,21 +62,6 @@ export async function kreirajOglas(formData: FormData): Promise<OglasRezultat> {
     if ((slika as File).size > MAX_SLIKA_BAJTOVA) {
       return { error: "Slika ne sme biti veća od 5MB." };
     }
-  }
-
-  let konacniPredmetId = predmetId;
-
-  if (predmetId === NOVI_PREDMET_VREDNOST) {
-    const { data: noviPredmet, error: predmetGreska } = await supabase
-      .from("predmeti")
-      .insert({ smer_id: smerId, godina, naziv: noviPredmetNaziv })
-      .select("id")
-      .single();
-
-    if (predmetGreska || !noviPredmet) {
-      return { error: "Došlo je do greške pri dodavanju predmeta." };
-    }
-    konacniPredmetId = noviPredmet.id;
   }
 
   let slikaUrl: string | null = null;
@@ -110,9 +89,10 @@ export async function kreirajOglas(formData: FormData): Promise<OglasRezultat> {
   const { error: oglasGreska } = await supabase.from("oglasi").insert({
     korisnik_id: user.id,
     tip,
-    predmet_id: konacniPredmetId,
+    naziv,
+    predmet_id: predmetId || null,
     godina,
-    smer_id: smerId,
+    smer_id: smerId || null,
     cena,
     besplatno,
     opis: opis || null,
@@ -142,6 +122,7 @@ export async function azurirajOglas(formData: FormData): Promise<OglasRezultat> 
   }
 
   const oglasId = String(formData.get("oglas_id") ?? "");
+  const naziv = String(formData.get("naziv") ?? "").trim();
   const besplatno = formData.get("besplatno") === "on";
   const cenaRaw = String(formData.get("cena") ?? "").trim();
   const opis = String(formData.get("opis") ?? "").trim();
@@ -149,6 +130,9 @@ export async function azurirajOglas(formData: FormData): Promise<OglasRezultat> 
 
   if (!oglasId) {
     return { error: "Nedostaje oglas." };
+  }
+  if (!naziv) {
+    return { error: "Upiši naziv oglasa." };
   }
   if (!besplatno && !cenaRaw) {
     return { error: "Upiši cenu ili označi da je besplatno." };
@@ -168,6 +152,7 @@ export async function azurirajOglas(formData: FormData): Promise<OglasRezultat> 
   }
 
   const izmene: Record<string, unknown> = {
+    naziv,
     besplatno,
     cena,
     opis: opis || null,

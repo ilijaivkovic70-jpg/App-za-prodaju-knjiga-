@@ -12,11 +12,13 @@ import { azurirajOglas } from "@/lib/oglasi/actions";
 
 export function OglasIzmenaForma({
   oglasId,
+  pocetniNaziv,
   pocetnaCena,
   pocetnoBesplatno,
   pocetniOpis,
 }: {
   oglasId: string;
+  pocetniNaziv: string;
   pocetnaCena: number | null;
   pocetnoBesplatno: boolean;
   pocetniOpis: string | null;
@@ -54,6 +56,11 @@ export function OglasIzmenaForma({
           <AlertDescription>Izmene su sačuvane.</AlertDescription>
         </Alert>
       )}
+
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="naziv">Naziv</Label>
+        <Input id="naziv" name="naziv" type="text" defaultValue={pocetniNaziv} required />
+      </div>
 
       <div className="flex items-center gap-2">
         <Checkbox

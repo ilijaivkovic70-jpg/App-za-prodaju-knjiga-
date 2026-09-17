@@ -11,6 +11,7 @@ const NAZIVI_TIPOVA: Record<string, string> = {
   skripta: "Skripta",
   beleske: "Beleške",
   zbirka: "Zbirka zadataka",
+  komplet: "Komplet knjiga",
   ostalo: "Ostalo",
 };
 
@@ -35,7 +36,7 @@ export default async function OglasDetaljPage({
   const { data: oglas } = await supabase
     .from("oglasi")
     .select(
-      "id, tip, cena, besplatno, godina, opis, slika_url, status, korisnik_id, predmet_id, smer_id, created_at, predmeti(naziv), smerovi(naziv)"
+      "id, tip, naziv, cena, besplatno, godina, opis, slika_url, status, korisnik_id, predmet_id, smer_id, created_at, smerovi(naziv)"
     )
     .eq("id", id)
     .maybeSingle();
@@ -44,11 +45,13 @@ export default async function OglasDetaljPage({
     notFound();
   }
 
-  const { data: brojTrazenja } = await supabase.rpc("broj_trazenja", {
-    p_predmet_id: oglas.predmet_id,
-    p_godina: oglas.godina,
-    p_smer_id: oglas.smer_id,
-  });
+  const { data: brojTrazenja } = oglas.predmet_id
+    ? await supabase.rpc("broj_trazenja", {
+        p_predmet_id: oglas.predmet_id,
+        p_godina: oglas.godina,
+        p_smer_id: oglas.smer_id,
+      })
+    : { data: 0 };
 
   const { data: profil } = await supabase
     .from("profiles")
@@ -79,16 +82,13 @@ export default async function OglasDetaljPage({
     mozeDaOceni = !postojecaOcena;
   }
 
-  const predmetNaziv = jedanNaziv(oglas.predmeti);
   const smerNaziv = jedanNaziv(oglas.smerovi);
   const fakultetNaziv = jedanNaziv(
     profil?.fakulteti as { naziv: string } | { naziv: string }[] | null
   );
 
   const mailtoHref = prodavacEmail
-    ? `mailto:${prodavacEmail}?subject=${encodeURIComponent(
-        `Oglas: ${predmetNaziv ?? "materijal"}`
-      )}`
+    ? `mailto:${prodavacEmail}?subject=${encodeURIComponent(`Oglas: ${oglas.naziv}`)}`
     : null;
 
   return (
@@ -98,7 +98,7 @@ export default async function OglasDetaljPage({
           {oglas.slika_url ? (
             <Image
               src={oglas.slika_url}
-              alt={predmetNaziv ?? "Oglas"}
+              alt={oglas.naziv}
               fill
               className="object-cover"
               sizes="(min-width: 768px) 50vw, 100vw"
@@ -126,7 +126,7 @@ export default async function OglasDetaljPage({
               )}
             </p>
             <h1 className="text-[32px] font-bold leading-tight">
-              {predmetNaziv ?? "Predmet"}
+              {oglas.naziv}
             </h1>
             <p className="text-sm text-muted-foreground">
               {smerNaziv ? `${smerNaziv}, ` : ""}

@@ -26,7 +26,7 @@ export default async function IzmeniOglasPage({
 
   const { data: oglas } = await supabase
     .from("oglasi")
-    .select("id, cena, besplatno, opis, korisnik_id")
+    .select("id, naziv, cena, besplatno, opis, korisnik_id")
     .eq("id", id)
     .eq("korisnik_id", user.id)
     .maybeSingle();
@@ -41,12 +41,13 @@ export default async function IzmeniOglasPage({
         <CardHeader>
           <CardTitle className="text-xl">Izmeni oglas</CardTitle>
           <CardDescription>
-            Ažuriraj cenu, opis ili sliku svog oglasa.
+            Ažuriraj naziv, cenu, opis ili sliku svog oglasa.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <OglasIzmenaForma
             oglasId={oglas.id}
+            pocetniNaziv={oglas.naziv}
             pocetnaCena={oglas.cena}
             pocetnoBesplatno={oglas.besplatno}
             pocetniOpis={oglas.opis}

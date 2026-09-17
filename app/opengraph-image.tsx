@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Studentska platforma za udžbenike";
+export const alt = "EKOF Knjige";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -41,10 +41,10 @@ export default async function Image() {
               fontWeight: 700,
             }}
           >
-            K
+            E
           </div>
           <div style={{ fontSize: 28, fontWeight: 600, color: "#111827" }}>
-            Knjige za studente
+            EKOF Knjige
           </div>
         </div>
         <div

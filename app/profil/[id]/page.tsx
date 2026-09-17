@@ -46,7 +46,7 @@ export default async function JavniProfilPage({
   const { data: oglasi } = await supabase
     .from("oglasi")
     .select(
-      "id, tip, cena, besplatno, godina, slika_url, predmeti(naziv), smerovi(naziv)"
+      "id, tip, naziv, cena, besplatno, godina, slika_url, smerovi(naziv)"
     )
     .eq("korisnik_id", id)
     .eq("status", "aktivan")

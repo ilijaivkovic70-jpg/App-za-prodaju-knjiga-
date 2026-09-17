@@ -13,6 +13,7 @@ const NAZIVI_TIPOVA: Record<string, string> = {
   skripta: "Skripta",
   beleske: "Beleške",
   zbirka: "Zbirka zadataka",
+  komplet: "Komplet knjiga",
   ostalo: "Ostalo",
 };
 
@@ -25,26 +26,19 @@ const NAZIVI_STATUSA: Record<string, string> = {
 export type MojOglas = {
   id: string;
   tip: string;
+  naziv: string;
   cena: number | null;
   besplatno: boolean;
   godina: number;
   slika_url: string | null;
   status: string;
-  predmeti: { naziv: string } | { naziv: string }[] | null;
 };
-
-function jedanNaziv(relacija: { naziv: string } | { naziv: string }[] | null) {
-  if (!relacija) return null;
-  return Array.isArray(relacija) ? relacija[0]?.naziv ?? null : relacija.naziv;
-}
 
 export function MojOglasKartica({ oglas }: { oglas: MojOglas }) {
   const router = useRouter();
   const [pendingStatus, startStatusTransition] = useTransition();
   const [pendingBrisanje, startBrisanjeTransition] = useTransition();
   const [greska, setGreska] = useState<string | null>(null);
-
-  const predmetNaziv = jedanNaziv(oglas.predmeti);
 
   function promeniStatus(status: string) {
     setGreska(null);
@@ -86,7 +80,7 @@ export function MojOglasKartica({ oglas }: { oglas: MojOglas }) {
           {oglas.slika_url ? (
             <Image
               src={oglas.slika_url}
-              alt={predmetNaziv ?? "Oglas"}
+              alt={oglas.naziv}
               fill
               className="object-cover"
               sizes="160px"
@@ -117,7 +111,7 @@ export function MojOglasKartica({ oglas }: { oglas: MojOglas }) {
               href={`/oglasi/${oglas.id}`}
               className="text-base font-semibold leading-snug hover:underline"
             >
-              {predmetNaziv ?? "Predmet"}
+              {oglas.naziv}
             </Link>
             <p className="text-sm font-bold text-primary">
               {oglas.besplatno

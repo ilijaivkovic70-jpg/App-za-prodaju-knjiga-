@@ -22,7 +22,7 @@ export async function Navbar() {
     <header className="relative border-b bg-background">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
         <Link href="/" className="text-lg font-bold text-foreground">
-          Knjige<span className="text-primary">za</span>Studente
+          EKOF <span className="text-primary">KNJIGE</span>
         </Link>
 
         <nav className="hidden items-center gap-6 text-sm font-medium sm:flex">

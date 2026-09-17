@@ -8,7 +8,14 @@ export type OglasiFilteri = {
   pretraga: string | null;
 };
 
-const VALIDNI_TIPOVI = ["knjiga", "skripta", "beleske", "zbirka", "ostalo"];
+const VALIDNI_TIPOVI = [
+  "knjiga",
+  "skripta",
+  "beleske",
+  "zbirka",
+  "komplet",
+  "ostalo",
+];
 
 export function parsirajFiltere(
   params: Record<string, string | string[] | undefined>
@@ -89,10 +96,10 @@ export function primeniFiltereNaUpit(
     const tekst = ocistiZaOrFilter(filteri.pretraga);
     if (predmetIdsZaPretragu && predmetIdsZaPretragu.length > 0) {
       rezultat = rezultat.or(
-        `opis.ilike.%${tekst}%,predmet_id.in.(${predmetIdsZaPretragu.join(",")})`
+        `naziv.ilike.%${tekst}%,opis.ilike.%${tekst}%,predmet_id.in.(${predmetIdsZaPretragu.join(",")})`
       );
     } else {
-      rezultat = rezultat.ilike("opis", `%${tekst}%`);
+      rezultat = rezultat.or(`naziv.ilike.%${tekst}%,opis.ilike.%${tekst}%`);
     }
   }
   return rezultat;

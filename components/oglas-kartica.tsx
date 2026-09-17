@@ -5,11 +5,11 @@ import { Card, CardContent } from "@/components/ui/card";
 export type OglasZaKarticu = {
   id: string;
   tip: string;
+  naziv: string;
   cena: number | null;
   besplatno: boolean;
   godina: number;
   slika_url: string | null;
-  predmeti: { naziv: string } | { naziv: string }[] | null;
   smerovi: { naziv: string } | { naziv: string }[] | null;
 };
 
@@ -18,6 +18,7 @@ const NAZIVI_TIPOVA: Record<string, string> = {
   skripta: "Skripta",
   beleske: "Beleške",
   zbirka: "Zbirka zadataka",
+  komplet: "Komplet knjiga",
   ostalo: "Ostalo",
 };
 
@@ -27,7 +28,6 @@ function jedanNaziv(relacija: { naziv: string } | { naziv: string }[] | null) {
 }
 
 export function OglasKartica({ oglas }: { oglas: OglasZaKarticu }) {
-  const predmetNaziv = jedanNaziv(oglas.predmeti);
   const smerNaziv = jedanNaziv(oglas.smerovi);
 
   return (
@@ -40,7 +40,7 @@ export function OglasKartica({ oglas }: { oglas: OglasZaKarticu }) {
           {oglas.slika_url ? (
             <Image
               src={oglas.slika_url}
-              alt={predmetNaziv ?? "Oglas"}
+              alt={oglas.naziv}
               fill
               className="object-cover"
               sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 100vw"
@@ -60,9 +60,7 @@ export function OglasKartica({ oglas }: { oglas: OglasZaKarticu }) {
           <p className="text-sm text-muted-foreground">
             {NAZIVI_TIPOVA[oglas.tip] ?? oglas.tip}
           </p>
-          <h3 className="text-base font-semibold leading-snug">
-            {predmetNaziv ?? "Predmet"}
-          </h3>
+          <h3 className="text-base font-semibold leading-snug">{oglas.naziv}</h3>
           <p className="text-sm text-muted-foreground">
             {smerNaziv ? `${smerNaziv}, ` : ""}
             {oglas.godina}. godina

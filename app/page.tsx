@@ -8,7 +8,7 @@ const PREDNOSTI = [
   {
     ikona: Search,
     naslov: "Filteri i pretraga",
-    opis: "Pronađi tačno predmet, godinu i smer koji ti treba, bez skrolovanja kroz Viber poruke.",
+    opis: "Pronađi tačno ono što ti treba po godini i tipu materijala, bez skrolovanja kroz Viber poruke.",
   },
   {
     ikona: Gift,
@@ -32,7 +32,7 @@ export default async function Home() {
   const { data: oglasi } = await supabase
     .from("oglasi")
     .select(
-      "id, tip, cena, besplatno, godina, slika_url, predmeti(naziv), smerovi(naziv)"
+      "id, tip, naziv, cena, besplatno, godina, slika_url, smerovi(naziv)"
     )
     .eq("status", "aktivan")
     .order("created_at", { ascending: false })

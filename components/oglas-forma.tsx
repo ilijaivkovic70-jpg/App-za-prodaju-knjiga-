@@ -17,27 +17,24 @@ import {
 } from "@/components/ui/select";
 import { kreirajOglas } from "@/lib/oglasi/actions";
 
-type Fakultet = { id: string; naziv: string };
 type Smer = { id: string; fakultet_id: string; naziv: string };
 type Predmet = { id: string; smer_id: string; godina: number; naziv: string };
 
 const GODINE = [1, 2, 3, 4, 5, 6];
-const NOVI_PREDMET_VREDNOST = "__novi__";
 
 const TIPOVI = [
   { value: "knjiga", label: "Knjiga" },
   { value: "skripta", label: "Skripta" },
   { value: "beleske", label: "Beleške" },
   { value: "zbirka", label: "Zbirka zadataka" },
+  { value: "komplet", label: "Komplet knjiga" },
   { value: "ostalo", label: "Ostalo" },
 ];
 
 export function OglasForma({
-  fakulteti,
   smerovi,
   predmeti,
 }: {
-  fakulteti: Fakultet[];
   smerovi: Smer[];
   predmeti: Predmet[];
 }) {
@@ -46,32 +43,21 @@ export function OglasForma({
   const [uspeh, setUspeh] = useState(false);
   const [pending, startTransition] = useTransition();
 
-  const [fakultetId, setFakultetId] = useState<string | null>(null);
   const [smerId, setSmerId] = useState<string | null>(null);
   const [godina, setGodina] = useState<string | null>(null);
   const [predmetId, setPredmetId] = useState<string | null>(null);
   const [besplatno, setBesplatno] = useState(false);
   const [formKey, setFormKey] = useState(0);
 
-  const smeroviZaFakultet = useMemo(
-    () => smerovi.filter((smer) => smer.fakultet_id === fakultetId),
-    [smerovi, fakultetId]
-  );
-
-  const predmetiZaSmerIGodinu = useMemo(
+  const predmetiZaFilter = useMemo(
     () =>
       predmeti.filter(
         (predmet) =>
-          predmet.smer_id === smerId && String(predmet.godina) === godina
+          (!godina || String(predmet.godina) === godina) &&
+          (!smerId || predmet.smer_id === smerId)
       ),
     [predmeti, smerId, godina]
   );
-
-  function handleFakultetChange(vrednost: string | null) {
-    setFakultetId(vrednost);
-    setSmerId(null);
-    setPredmetId(null);
-  }
 
   function handleSmerChange(vrednost: string | null) {
     setSmerId(vrednost);
@@ -93,7 +79,6 @@ export function OglasForma({
         return;
       }
       setUspeh(true);
-      setFakultetId(null);
       setSmerId(null);
       setGodina(null);
       setPredmetId(null);
@@ -133,49 +118,14 @@ export function OglasForma({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="fakultet_id">Fakultet</Label>
-        <Select
-          value={fakultetId}
-          onValueChange={handleFakultetChange}
+        <Label htmlFor="naziv">Naziv</Label>
+        <Input
+          id="naziv"
+          name="naziv"
+          type="text"
+          placeholder="npr. Mikroekonomija ili Komplet knjiga za 1. godinu"
           required
-          items={fakulteti.map((f) => ({ value: f.id, label: f.naziv }))}
-        >
-          <SelectTrigger id="fakultet_id" className="w-full">
-            <SelectValue placeholder="Izaberi fakultet" />
-          </SelectTrigger>
-          <SelectContent>
-            {fakulteti.map((fakultet) => (
-              <SelectItem key={fakultet.id} value={fakultet.id}>
-                {fakultet.naziv}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="smer_id">Smer</Label>
-        <Select
-          name="smer_id"
-          value={smerId}
-          onValueChange={handleSmerChange}
-          disabled={!fakultetId}
-          required
-          items={smeroviZaFakultet.map((s) => ({ value: s.id, label: s.naziv }))}
-        >
-          <SelectTrigger id="smer_id" className="w-full">
-            <SelectValue
-              placeholder={fakultetId ? "Izaberi smer" : "Prvo izaberi fakultet"}
-            />
-          </SelectTrigger>
-          <SelectContent>
-            {smeroviZaFakultet.map((smer) => (
-              <SelectItem key={smer.id} value={smer.id}>
-                {smer.naziv}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        />
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -201,49 +151,46 @@ export function OglasForma({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="predmet_id">Predmet</Label>
+        <Label htmlFor="smer_id">Smer (opciono)</Label>
         <Select
-          name="predmet_id"
-          value={predmetId}
-          onValueChange={setPredmetId}
-          disabled={!smerId || !godina}
-          required
-          items={[
-            ...predmetiZaSmerIGodinu.map((p) => ({ value: p.id, label: p.naziv })),
-            { value: NOVI_PREDMET_VREDNOST, label: "+ Dodaj novi predmet" },
-          ]}
+          name="smer_id"
+          value={smerId}
+          onValueChange={handleSmerChange}
+          items={smerovi.map((s) => ({ value: s.id, label: s.naziv }))}
         >
-          <SelectTrigger id="predmet_id" className="w-full">
-            <SelectValue
-              placeholder={
-                smerId && godina ? "Izaberi predmet" : "Prvo izaberi smer i godinu"
-              }
-            />
+          <SelectTrigger id="smer_id" className="w-full">
+            <SelectValue placeholder="Nije bitno / svi smerovi" />
           </SelectTrigger>
           <SelectContent>
-            {predmetiZaSmerIGodinu.map((predmet) => (
-              <SelectItem key={predmet.id} value={predmet.id}>
-                {predmet.naziv}
+            {smerovi.map((smer) => (
+              <SelectItem key={smer.id} value={smer.id}>
+                {smer.naziv}
               </SelectItem>
             ))}
-            <SelectItem value={NOVI_PREDMET_VREDNOST}>
-              + Dodaj novi predmet
-            </SelectItem>
           </SelectContent>
         </Select>
       </div>
 
-      {predmetId === NOVI_PREDMET_VREDNOST && (
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="novi_predmet_naziv">Naziv novog predmeta</Label>
-          <Input
-            id="novi_predmet_naziv"
-            name="novi_predmet_naziv"
-            type="text"
-            required
-          />
-        </div>
-      )}
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="predmet_id">Predmet (opciono)</Label>
+        <Select
+          name="predmet_id"
+          value={predmetId}
+          onValueChange={setPredmetId}
+          items={predmetiZaFilter.map((p) => ({ value: p.id, label: p.naziv }))}
+        >
+          <SelectTrigger id="predmet_id" className="w-full">
+            <SelectValue placeholder="Poveži sa predmetom sa liste" />
+          </SelectTrigger>
+          <SelectContent>
+            {predmetiZaFilter.map((predmet) => (
+              <SelectItem key={predmet.id} value={predmet.id}>
+                {predmet.naziv}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       <div className="flex items-center gap-2">
         <Checkbox
