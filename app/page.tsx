@@ -1,69 +1,100 @@
-import Image from "next/image";
+import Link from "next/link";
+import { Search, Gift, Users, Star } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
+import { Button } from "@/components/ui/button";
+import { OglasKartica, type OglasZaKarticu } from "@/components/oglas-kartica";
 
-export default function Home() {
+const PREDNOSTI = [
+  {
+    ikona: Search,
+    naslov: "Filteri i pretraga",
+    opis: "Pronađi tačno predmet, godinu i smer koji ti treba, bez skrolovanja kroz Viber poruke.",
+  },
+  {
+    ikona: Gift,
+    naslov: "Besplatni materijali",
+    opis: "Posebna sekcija za skripte i beleške koje stariji studenti dele bez naknade.",
+  },
+  {
+    ikona: Users,
+    naslov: "Matching",
+    opis: "Postavi šta ti treba i dobićeš email čim se pojavi oglas za taj predmet.",
+  },
+  {
+    ikona: Star,
+    naslov: "Reputacija",
+    opis: "Ocene posle svake transakcije grade poverenje između studenata koji se ne poznaju.",
+  },
+];
+
+export default async function Home() {
+  const supabase = await createClient();
+  const { data: oglasi } = await supabase
+    .from("oglasi")
+    .select(
+      "id, tip, cena, besplatno, godina, slika_url, predmeti(naziv), smerovi(naziv)"
+    )
+    .eq("status", "aktivan")
+    .order("created_at", { ascending: false })
+    .limit(4);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
+    <>
+      <section className="border-b bg-muted/30">
+        <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-6 px-4 py-20 text-center">
+          <h1 className="max-w-2xl text-[32px] font-bold leading-tight sm:text-5xl">
+            Udžbenici i skripte, od studenta do studenta
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="max-w-xl text-base text-muted-foreground sm:text-lg">
+            Kupuj i prodaj polovne udžbenike, skripte, beleške i zbirke
+            zadataka sa Ekonomskog fakulteta u Beogradu, kroz filtere i
+            pretragu umesto beskonačnog skrolovanja Viber grupa.
           </p>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button render={<Link href="/oglasi" />} size="lg">
+              Pogledaj oglase
+            </Button>
+            <Button render={<Link href="/oglasi/novi" />} variant="outline" size="lg">
+              Postavi oglas
+            </Button>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      <section className="mx-auto w-full max-w-6xl px-4 py-16">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {PREDNOSTI.map(({ ikona: Ikona, naslov, opis }) => (
+            <div key={naslov} className="flex flex-col gap-2">
+              <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <Ikona className="size-5" />
+              </div>
+              <h3 className="text-lg font-semibold">{naslov}</h3>
+              <p className="text-sm text-muted-foreground">{opis}</p>
+            </div>
+          ))}
         </div>
-      </main>
-    </div>
+      </section>
+
+      {oglasi && oglasi.length > 0 && (
+        <section className="border-t bg-muted/30">
+          <div className="mx-auto w-full max-w-6xl px-4 py-16">
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-2xl font-bold">Najnoviji oglasi</h2>
+              <Link
+                href="/oglasi"
+                className="text-sm font-medium text-primary hover:underline"
+              >
+                Svi oglasi
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {(oglasi as unknown as OglasZaKarticu[]).map((oglas) => (
+                <OglasKartica key={oglas.id} oglas={oglas} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+    </>
   );
 }
