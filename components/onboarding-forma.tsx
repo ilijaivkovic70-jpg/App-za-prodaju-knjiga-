@@ -108,19 +108,18 @@ export function OnboardingForma({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="smer_id">Smer</Label>
+        <Label htmlFor="smer_id">Smer (opciono)</Label>
         <Select
           name="smer_id"
           value={smerId}
           onValueChange={setSmerId}
           disabled={!fakultetId}
-          required
           items={smeroviZaFakultet.map((s) => ({ value: s.id, label: s.naziv }))}
         >
           <SelectTrigger id="smer_id" className="w-full">
             <SelectValue
               placeholder={
-                fakultetId ? "Izaberi smer" : "Prvo izaberi fakultet"
+                fakultetId ? "Nije bitno / svi smerovi" : "Prvo izaberi fakultet"
               }
             />
           </SelectTrigger>

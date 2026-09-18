@@ -36,9 +36,6 @@ export async function sacuvajProfil(
   if (!fakultetId) {
     return { error: "Izaberi fakultet." };
   }
-  if (!smerId) {
-    return { error: "Izaberi smer." };
-  }
   if (!godinaRaw || Number.isNaN(godina) || godina < 1 || godina > 6) {
     return { error: "Izaberi godinu studija." };
   }
@@ -48,7 +45,7 @@ export async function sacuvajProfil(
     ime,
     uloga,
     fakultet_id: fakultetId,
-    smer_id: smerId,
+    smer_id: smerId || null,
     godina,
   });
 
