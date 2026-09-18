@@ -134,6 +134,17 @@ export function OnboardingForma({
       </div>
 
       <div className="flex flex-col gap-1.5">
+        <Label htmlFor="telefon">Broj telefona (opciono)</Label>
+        <Input
+          id="telefon"
+          name="telefon"
+          type="tel"
+          placeholder="npr. 06x xxx xxxx"
+          autoComplete="tel"
+        />
+      </div>
+
+      <div className="flex flex-col gap-1.5">
         <Label htmlFor="godina">Godina studija</Label>
         <Select
           name="godina"

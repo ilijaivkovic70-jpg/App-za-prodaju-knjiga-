@@ -26,6 +26,7 @@ export async function sacuvajProfil(
   const smerId = String(formData.get("smer_id") ?? "");
   const godinaRaw = String(formData.get("godina") ?? "");
   const godina = Number(godinaRaw);
+  const telefon = String(formData.get("telefon") ?? "").trim();
 
   if (!ime) {
     return { error: "Ime je obavezno." };
@@ -47,6 +48,7 @@ export async function sacuvajProfil(
     fakultet_id: fakultetId,
     smer_id: smerId || null,
     godina,
+    telefon: telefon || null,
   });
 
   if (error) {

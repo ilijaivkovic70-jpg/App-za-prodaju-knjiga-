@@ -5,6 +5,7 @@ import "./globals.css";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { MobileNav } from "@/components/mobile-nav";
+import { createClient } from "@/lib/supabase/server";
 
 const sora = Sora({
   variable: "--font-sans",
@@ -55,7 +56,22 @@ try {
 } catch (e) {}
 `;
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let brojNeprocitanih = 0;
+  if (user) {
+    const { count } = await supabase
+      .from("poruke")
+      .select("id", { count: "exact", head: true })
+      .eq("primalac_id", user.id)
+      .eq("procitano", false);
+    brojNeprocitanih = count ?? 0;
+  }
+
   return (
     <html
       lang="sr"
@@ -69,7 +85,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Navbar />
         <main className="flex-1">{children}</main>
         <Footer />
-        <MobileNav />
+        <MobileNav prijavljen={!!user} brojNeprocitanih={brojNeprocitanih} />
         <Analytics />
       </body>
     </html>

@@ -56,7 +56,7 @@ export default async function OglasDetaljPage({
 
   const { data: profil } = await supabase
     .from("profiles")
-    .select("user_id, ime, verifikovan, prosecna_ocena, godina, fakulteti(naziv)")
+    .select("user_id, ime, verifikovan, prosecna_ocena, godina, telefon, fakulteti(naziv)")
     .eq("user_id", oglas.korisnik_id)
     .maybeSingle();
 
@@ -65,12 +65,6 @@ export default async function OglasDetaljPage({
   } = await supabase.auth.getUser();
 
   const jeVlasnik = user?.id === oglas.korisnik_id;
-
-  let prodavacEmail: string | null = null;
-  if (user && !jeVlasnik) {
-    const { data } = await supabase.rpc("email_prodavca", { oglas_id: oglas.id });
-    prodavacEmail = data ?? null;
-  }
 
   let mozeDaOceni = false;
   if (user && !jeVlasnik && oglas.status === "prodato") {
@@ -87,10 +81,6 @@ export default async function OglasDetaljPage({
   const fakultetNaziv = jedanNaziv(
     profil?.fakulteti as { naziv: string } | { naziv: string }[] | null
   );
-
-  const mailtoHref = prodavacEmail
-    ? `mailto:${prodavacEmail}?subject=${encodeURIComponent(`Oglas: ${oglas.naziv}`)}`
-    : null;
 
   return (
     <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8">
@@ -176,6 +166,11 @@ export default async function OglasDetaljPage({
                   Prosečna ocena: {Number(profil.prosecna_ocena).toFixed(1)} / 5
                 </p>
               )}
+              {profil?.telefon && user && !jeVlasnik && (
+                <p className="text-sm text-muted-foreground">
+                  Telefon: <span className="text-foreground">{profil.telefon}</span>
+                </p>
+              )}
             </CardContent>
           </Card>
 
@@ -184,11 +179,10 @@ export default async function OglasDetaljPage({
           {!jeVlasnik &&
             (user ? (
               <Button
-                render={<a href={mailtoHref ?? undefined} />}
+                render={<Link href={`/poruke/${oglas.id}/${oglas.korisnik_id}`} />}
                 className="mt-2"
-                disabled={!mailtoHref}
               >
-                Kontaktiraj prodavca
+                Pošalji poruku prodavcu
               </Button>
             ) : (
               <Button render={<Link href="/prijava" />} className="mt-2">

@@ -24,13 +24,17 @@ export default async function JavniProfilPage({
 
   const { data: profil } = await supabase
     .from("profiles")
-    .select("user_id, ime, verifikovan, prosecna_ocena, godina, fakulteti(naziv)")
+    .select("user_id, ime, verifikovan, prosecna_ocena, godina, telefon, fakulteti(naziv)")
     .eq("user_id", id)
     .maybeSingle();
 
   if (!profil) {
     notFound();
   }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   const { count: brojProdaja } = await supabase
     .from("oglasi")
@@ -84,6 +88,11 @@ export default async function JavniProfilPage({
             </span>
             <span>{brojProdaja ?? 0} realizovanih prodaja</span>
           </div>
+          {profil.telefon && user && (
+            <p className="mt-1 text-sm text-muted-foreground">
+              Telefon: <span className="text-foreground">{profil.telefon}</span>
+            </p>
+          )}
         </CardContent>
       </Card>
 

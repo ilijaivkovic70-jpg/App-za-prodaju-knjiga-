@@ -18,6 +18,16 @@ export async function Navbar() {
   const jeAdmin = jeAdminEmail(user?.email);
   const inicijal = (user?.email ?? "?").charAt(0).toUpperCase();
 
+  let brojNeprocitanih = 0;
+  if (user) {
+    const { count } = await supabase
+      .from("poruke")
+      .select("id", { count: "exact", head: true })
+      .eq("primalac_id", user.id)
+      .eq("procitano", false);
+    brojNeprocitanih = count ?? 0;
+  }
+
   return (
     <header className="relative z-20">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-4 px-5 py-4">
@@ -35,6 +45,19 @@ export async function Navbar() {
               {link.naziv}
             </Link>
           ))}
+          {user && (
+            <Link
+              href="/poruke"
+              className="relative rounded-full px-4 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-akcent-soft hover:text-akcent"
+            >
+              Poruke
+              {brojNeprocitanih > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-akcent text-[9px] font-semibold text-white">
+                  {brojNeprocitanih > 9 ? "9+" : brojNeprocitanih}
+                </span>
+              )}
+            </Link>
+          )}
           {jeAdmin && (
             <Link
               href="/admin"
