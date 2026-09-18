@@ -59,6 +59,7 @@ export async function sacuvajOcenu(formData: FormData): Promise<OcenaRezultat> {
     return { error: "Došlo je do greške pri čuvanju ocene." };
   }
 
-  revalidatePath("/", "layout");
+  revalidatePath(`/oglasi/${oglasId}`);
+  revalidatePath(`/profil/${oglas.korisnik_id}`);
   return { success: true };
 }

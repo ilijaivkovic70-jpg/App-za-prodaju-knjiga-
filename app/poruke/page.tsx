@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { trenutniKorisnik } from "@/lib/auth/current-user";
 import { Card, CardContent } from "@/components/ui/card";
 
 type Konverzacija = {
@@ -13,9 +14,7 @@ type Konverzacija = {
 
 export default async function PorukePage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await trenutniKorisnik();
 
   if (!user) {
     redirect("/prijava");

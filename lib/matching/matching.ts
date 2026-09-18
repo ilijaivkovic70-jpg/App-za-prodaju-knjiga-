@@ -57,18 +57,22 @@ export async function posaljiMatchObavestenja(
   }
 
   const resend = new Resend(process.env.RESEND_API_KEY);
-  let poslato = 0;
 
-  for (const [email, oglasi] of poNalogu) {
-    const predmetNaziv = oglasi[0]?.predmet_naziv ?? "tvoj predmet";
-    const { error } = await resend.emails.send({
-      from: RESEND_FROM,
-      to: email,
-      subject: `Neko traži materijal iz predmeta "${predmetNaziv}"`,
-      html: `<p>Zdravo,</p><p>Student traži materijal iz predmeta <strong>${predmetNaziv}</strong>, a ti imaš aktivan oglas koji odgovara toj potrazi.</p><p>Proveri svoj oglas na platformi i javi se ako je materijal još dostupan.</p>`,
-    });
-    if (!error) poslato += 1;
-  }
+  const rezultati = await Promise.allSettled(
+    Array.from(poNalogu.entries()).map(([email, oglasi]) => {
+      const predmetNaziv = oglasi[0]?.predmet_naziv ?? "tvoj predmet";
+      return resend.emails.send({
+        from: RESEND_FROM,
+        to: email,
+        subject: `Neko traži materijal iz predmeta "${predmetNaziv}"`,
+        html: `<p>Zdravo,</p><p>Student traži materijal iz predmeta <strong>${predmetNaziv}</strong>, a ti imaš aktivan oglas koji odgovara toj potrazi.</p><p>Proveri svoj oglas na platformi i javi se ako je materijal još dostupan.</p>`,
+      });
+    })
+  );
+
+  const poslato = rezultati.filter(
+    (r) => r.status === "fulfilled" && !r.value.error
+  ).length;
 
   return { poslato };
 }

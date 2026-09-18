@@ -9,15 +9,12 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { PrijavaForma } from "@/components/prijava-forma";
-import { createClient } from "@/lib/supabase/server";
+import { trenutniKorisnik } from "@/lib/auth/current-user";
 
 export default async function PrijavaPage({
   searchParams,
 }: PageProps<"/prijava">) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await trenutniKorisnik();
 
   if (user) {
     redirect("/");

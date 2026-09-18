@@ -8,13 +8,10 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { RegistracijaForma } from "@/components/registracija-forma";
-import { createClient } from "@/lib/supabase/server";
+import { trenutniKorisnik } from "@/lib/auth/current-user";
 
 export default async function RegistracijaPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await trenutniKorisnik();
 
   if (user) {
     redirect("/");

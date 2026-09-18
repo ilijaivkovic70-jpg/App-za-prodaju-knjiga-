@@ -8,12 +8,16 @@ import {
 } from "@/components/ui/card";
 import { OnboardingForma } from "@/components/onboarding-forma";
 import { createClient } from "@/lib/supabase/server";
+import { trenutniKorisnik } from "@/lib/auth/current-user";
 
 export default async function OnboardingPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+
+  const [user, { data: fakulteti }, { data: smerovi }] = await Promise.all([
+    trenutniKorisnik(),
+    supabase.from("fakulteti").select("id, naziv").order("naziv"),
+    supabase.from("smerovi").select("id, fakultet_id, naziv").order("naziv"),
+  ]);
 
   if (!user) {
     redirect("/prijava");
@@ -28,11 +32,6 @@ export default async function OnboardingPage() {
   if (profil) {
     redirect("/");
   }
-
-  const [{ data: fakulteti }, { data: smerovi }] = await Promise.all([
-    supabase.from("fakulteti").select("id, naziv").order("naziv"),
-    supabase.from("smerovi").select("id, fakultet_id, naziv").order("naziv"),
-  ]);
 
   return (
     <main className="flex flex-1 items-center justify-center p-6">

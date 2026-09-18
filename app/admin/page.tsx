@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { jeAdminEmail } from "@/lib/admin/auth";
+import { trenutniKorisnik } from "@/lib/auth/current-user";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 async function ucitajBroj(
@@ -12,9 +13,7 @@ async function ucitajBroj(
 
 export default async function AdminPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await trenutniKorisnik();
 
   if (!jeAdminEmail(user?.email)) {
     redirect("/");

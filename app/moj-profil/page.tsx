@@ -1,14 +1,13 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { trenutniKorisnik } from "@/lib/auth/current-user";
 import { MojOglasKartica, type MojOglas } from "@/components/moj-oglas-kartica";
 import { Button } from "@/components/ui/button";
 
 export default async function MojProfilPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await trenutniKorisnik();
 
   if (!user) {
     redirect("/prijava");

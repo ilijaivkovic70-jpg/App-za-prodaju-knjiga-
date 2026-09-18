@@ -1,5 +1,6 @@
 "use server";
 
+import { after } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { posaljiMatchObavestenja } from "@/lib/matching/matching";
 
@@ -30,6 +31,6 @@ export async function sacuvajPotragu(formData: FormData): Promise<void> {
     .single();
 
   if (potraga) {
-    await posaljiMatchObavestenja(supabase, potraga.id);
+    after(() => posaljiMatchObavestenja(supabase, potraga.id));
   }
 }

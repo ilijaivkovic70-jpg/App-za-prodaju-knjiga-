@@ -5,7 +5,8 @@ import "./globals.css";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { MobileNav } from "@/components/mobile-nav";
-import { createClient } from "@/lib/supabase/server";
+import { trenutniKorisnik } from "@/lib/auth/current-user";
+import { brojNeprocitanihPoruka } from "@/lib/poruke/unread";
 
 const sora = Sora({
   variable: "--font-sans",
@@ -57,20 +58,8 @@ try {
 `;
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  let brojNeprocitanih = 0;
-  if (user) {
-    const { count } = await supabase
-      .from("poruke")
-      .select("id", { count: "exact", head: true })
-      .eq("primalac_id", user.id)
-      .eq("procitano", false);
-    brojNeprocitanih = count ?? 0;
-  }
+  const user = await trenutniKorisnik();
+  const brojNeprocitanih = user ? await brojNeprocitanihPoruka(user.id) : 0;
 
   return (
     <html

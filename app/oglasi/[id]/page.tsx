@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { trenutniKorisnik } from "@/lib/auth/current-user";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { OcenaForma } from "@/components/ocena-forma";
@@ -46,23 +47,21 @@ export default async function OglasDetaljPage({
     notFound();
   }
 
-  const { data: brojTrazenja } = oglas.predmet_id
-    ? await supabase.rpc("broj_trazenja", {
-        p_predmet_id: oglas.predmet_id,
-        p_godina: oglas.godina,
-        p_smer_id: oglas.smer_id,
-      })
-    : { data: 0 };
-
-  const { data: profil } = await supabase
-    .from("profiles")
-    .select("user_id, ime, verifikovan, prosecna_ocena, godina, telefon, fakulteti(naziv)")
-    .eq("user_id", oglas.korisnik_id)
-    .maybeSingle();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const [{ data: brojTrazenja }, { data: profil }, user] = await Promise.all([
+    oglas.predmet_id
+      ? supabase.rpc("broj_trazenja", {
+          p_predmet_id: oglas.predmet_id,
+          p_godina: oglas.godina,
+          p_smer_id: oglas.smer_id,
+        })
+      : Promise.resolve({ data: 0 }),
+    supabase
+      .from("profiles")
+      .select("user_id, ime, verifikovan, prosecna_ocena, godina, telefon, fakulteti(naziv)")
+      .eq("user_id", oglas.korisnik_id)
+      .maybeSingle(),
+    trenutniKorisnik(),
+  ]);
 
   const jeVlasnik = user?.id === oglas.korisnik_id;
 

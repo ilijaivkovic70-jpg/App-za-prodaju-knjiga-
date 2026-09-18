@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/card";
 import { OglasIzmenaForma } from "@/components/oglas-izmena-forma";
 import { createClient } from "@/lib/supabase/server";
+import { trenutniKorisnik } from "@/lib/auth/current-user";
 
 export default async function IzmeniOglasPage({
   params,
@@ -16,9 +17,7 @@ export default async function IzmeniOglasPage({
 }) {
   const { id } = await params;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await trenutniKorisnik();
 
   if (!user) {
     redirect("/prijava");

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { trenutniKorisnik } from "@/lib/auth/current-user";
 import { Card, CardContent } from "@/components/ui/card";
 import { OglasKartica, type OglasZaKarticu } from "@/components/oglas-kartica";
 
@@ -22,39 +23,34 @@ export default async function JavniProfilPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const { data: profil } = await supabase
-    .from("profiles")
-    .select("user_id, ime, verifikovan, prosecna_ocena, godina, telefon, fakulteti(naziv)")
-    .eq("user_id", id)
-    .maybeSingle();
+  const [{ data: profil }, user, { count: brojProdaja }, { count: brojOcena }, { data: oglasi }] =
+    await Promise.all([
+      supabase
+        .from("profiles")
+        .select("user_id, ime, verifikovan, prosecna_ocena, godina, telefon, fakulteti(naziv)")
+        .eq("user_id", id)
+        .maybeSingle(),
+      trenutniKorisnik(),
+      supabase
+        .from("oglasi")
+        .select("id", { count: "exact", head: true })
+        .eq("korisnik_id", id)
+        .eq("status", "prodato"),
+      supabase
+        .from("ocene")
+        .select("id", { count: "exact", head: true })
+        .eq("ocenjeni_id", id),
+      supabase
+        .from("oglasi")
+        .select("id, tip, naziv, cena, besplatno, godina, slika_url, smerovi(naziv)")
+        .eq("korisnik_id", id)
+        .eq("status", "aktivan")
+        .order("created_at", { ascending: false }),
+    ]);
 
   if (!profil) {
     notFound();
   }
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const { count: brojProdaja } = await supabase
-    .from("oglasi")
-    .select("id", { count: "exact", head: true })
-    .eq("korisnik_id", id)
-    .eq("status", "prodato");
-
-  const { count: brojOcena } = await supabase
-    .from("ocene")
-    .select("id", { count: "exact", head: true })
-    .eq("ocenjeni_id", id);
-
-  const { data: oglasi } = await supabase
-    .from("oglasi")
-    .select(
-      "id, tip, naziv, cena, besplatno, godina, slika_url, smerovi(naziv)"
-    )
-    .eq("korisnik_id", id)
-    .eq("status", "aktivan")
-    .order("created_at", { ascending: false });
 
   const fakultetNaziv = jedanNaziv(profil.fakulteti);
 

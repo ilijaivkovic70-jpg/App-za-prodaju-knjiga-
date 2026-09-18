@@ -127,7 +127,9 @@ export async function kreirajOglas(formData: FormData): Promise<OglasRezultat> {
     return { error: "Došlo je do greške pri čuvanju oglasa." };
   }
 
-  revalidatePath("/", "layout");
+  revalidatePath("/");
+  revalidatePath("/oglasi");
+  if (besplatno) revalidatePath("/besplatno");
   return { success: true };
 }
 
@@ -207,7 +209,11 @@ export async function azurirajOglas(formData: FormData): Promise<OglasRezultat> 
     return { error: "Došlo je do greške pri čuvanju izmena." };
   }
 
-  revalidatePath("/", "layout");
+  revalidatePath("/");
+  revalidatePath("/oglasi");
+  revalidatePath("/besplatno");
+  revalidatePath(`/oglasi/${oglasId}`);
+  revalidatePath("/moj-profil");
   return { success: true };
 }
 
@@ -238,7 +244,11 @@ export async function promeniStatusOglasa(formData: FormData): Promise<OglasRezu
     return { error: "Došlo je do greške pri promeni statusa." };
   }
 
-  revalidatePath("/", "layout");
+  revalidatePath("/");
+  revalidatePath("/oglasi");
+  revalidatePath("/besplatno");
+  revalidatePath(`/oglasi/${oglasId}`);
+  revalidatePath("/moj-profil");
   return { success: true };
 }
 
@@ -281,6 +291,9 @@ export async function obrisiOglas(formData: FormData): Promise<OglasRezultat> {
     }
   }
 
-  revalidatePath("/", "layout");
+  revalidatePath("/");
+  revalidatePath("/oglasi");
+  revalidatePath("/besplatno");
+  revalidatePath("/moj-profil");
   return { success: true };
 }

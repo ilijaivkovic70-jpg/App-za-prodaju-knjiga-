@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
 import { jeAdminEmail } from "@/lib/admin/auth";
+import { trenutniKorisnik } from "@/lib/auth/current-user";
+import { brojNeprocitanihPoruka } from "@/lib/poruke/unread";
 import { LogoutDugme } from "@/components/logout-dugme";
 import { TemaPrekidac } from "@/components/tema-prekidac";
 
@@ -11,22 +12,10 @@ const NAV_LINKOVI = [
 ];
 
 export async function Navbar() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await trenutniKorisnik();
   const jeAdmin = jeAdminEmail(user?.email);
   const inicijal = (user?.email ?? "?").charAt(0).toUpperCase();
-
-  let brojNeprocitanih = 0;
-  if (user) {
-    const { count } = await supabase
-      .from("poruke")
-      .select("id", { count: "exact", head: true })
-      .eq("primalac_id", user.id)
-      .eq("procitano", false);
-    brojNeprocitanih = count ?? 0;
-  }
+  const brojNeprocitanih = user ? await brojNeprocitanihPoruka(user.id) : 0;
 
   return (
     <header className="relative z-20">
