@@ -6,6 +6,7 @@ export type OglasiFilteri = {
   cenaMin: number | null;
   cenaMax: number | null;
   pretraga: string | null;
+  besplatno: boolean;
 };
 
 export const PRAZNI_FILTERI: OglasiFilteri = {
@@ -16,6 +17,7 @@ export const PRAZNI_FILTERI: OglasiFilteri = {
   cenaMin: null,
   cenaMax: null,
   pretraga: null,
+  besplatno: false,
 };
 
 const VALIDNI_TIPOVI = [
@@ -49,6 +51,7 @@ export function parsirajFiltere(
     cenaMin: cenaMin ? Number(cenaMin) : null,
     cenaMax: cenaMax ? Number(cenaMax) : null,
     pretraga: pretraga?.trim() || null,
+    besplatno: uzmi("besplatno") === "1",
   };
 }
 
@@ -100,6 +103,7 @@ export function primeniFiltereNaUpit(
   if (filteri.godina) rezultat = rezultat.eq("godina", filteri.godina);
   if (filteri.predmetId) rezultat = rezultat.eq("predmet_id", filteri.predmetId);
   if (filteri.tip) rezultat = rezultat.eq("tip", filteri.tip);
+  if (filteri.besplatno) rezultat = rezultat.eq("besplatno", true);
   if (filteri.cenaMin != null) rezultat = rezultat.gte("cena", filteri.cenaMin);
   if (filteri.cenaMax != null) rezultat = rezultat.lte("cena", filteri.cenaMax);
   if (filteri.pretraga) {

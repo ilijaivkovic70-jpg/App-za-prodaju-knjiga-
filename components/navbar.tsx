@@ -2,8 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { jeAdminEmail } from "@/lib/admin/auth";
 import { LogoutDugme } from "@/components/logout-dugme";
-import { MobileNav } from "@/components/mobile-nav";
-import { Button } from "@/components/ui/button";
+import { TemaPrekidac } from "@/components/tema-prekidac";
 
 const NAV_LINKOVI = [
   { href: "/oglasi", naziv: "Oglasi" },
@@ -17,20 +16,21 @@ export async function Navbar() {
     data: { user },
   } = await supabase.auth.getUser();
   const jeAdmin = jeAdminEmail(user?.email);
+  const inicijal = (user?.email ?? "?").charAt(0).toUpperCase();
 
   return (
-    <header className="relative border-b bg-background">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-        <Link href="/" className="text-lg font-bold text-foreground">
-          EKOF <span className="text-primary">KNJIGE</span>
+    <header className="relative z-20">
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-4 px-5 py-4">
+        <Link href="/" className="text-lg font-bold tracking-[-0.02em]">
+          EKOF <span className="text-akcent">KNJIGE</span>
         </Link>
 
-        <nav className="hidden items-center gap-6 text-sm font-medium sm:flex">
+        <nav className="hidden rounded-full border border-border bg-secondary p-1.5 sm:flex">
           {NAV_LINKOVI.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="text-foreground/80 transition-colors hover:text-primary"
+              className="rounded-full px-4 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-akcent-soft hover:text-akcent"
             >
               {link.naziv}
             </Link>
@@ -38,36 +38,50 @@ export async function Navbar() {
           {jeAdmin && (
             <Link
               href="/admin"
-              className="text-foreground/80 transition-colors hover:text-primary"
+              className="rounded-full px-4 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-akcent-soft hover:text-akcent"
             >
               Admin
             </Link>
           )}
         </nav>
 
-        <div className="flex items-center gap-3">
-          <MobileNav jeAdmin={jeAdmin} />
+        <div className="ml-auto flex items-center gap-3">
+          <div className="hidden sm:block">
+            <TemaPrekidac />
+          </div>
           {user ? (
             <>
-              <Button render={<Link href="/oglasi/novi" />} size="sm">
+              <Link
+                href="/oglasi/novi"
+                className="grad-akcent rounded-full px-5 py-2.5 text-[13px] font-semibold text-white shadow-[0_8px_28px_oklch(0.55_0.25_300/0.4)]"
+              >
                 Postavi oglas
-              </Button>
+              </Link>
               <Link
                 href="/moj-profil"
-                className="hidden text-sm text-muted-foreground hover:text-foreground sm:inline"
+                aria-label="Moj profil"
+                className="grad-akcent grid size-9 place-items-center rounded-full text-sm font-semibold text-white"
               >
-                {user.email}
+                {inicijal}
               </Link>
-              <LogoutDugme />
+              <div className="hidden sm:block">
+                <LogoutDugme />
+              </div>
             </>
           ) : (
             <>
-              <Link href="/prijava" className="text-sm font-medium hover:text-primary">
+              <Link
+                href="/prijava"
+                className="text-[13px] text-muted-foreground hover:text-foreground"
+              >
                 Prijava
               </Link>
-              <Button render={<Link href="/registracija" />} size="sm">
+              <Link
+                href="/registracija"
+                className="grad-akcent rounded-full px-5 py-2.5 text-[13px] font-semibold text-white shadow-[0_8px_28px_oklch(0.55_0.25_300/0.4)]"
+              >
                 Registracija
-              </Button>
+              </Link>
             </>
           )}
         </div>

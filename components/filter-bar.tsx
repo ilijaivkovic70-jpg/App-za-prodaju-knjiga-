@@ -2,9 +2,6 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -21,10 +18,43 @@ const TIPOVI = [
   { value: "knjiga", label: "Knjiga" },
   { value: "skripta", label: "Skripta" },
   { value: "beleske", label: "Beleške" },
-  { value: "zbirka", label: "Zbirka zadataka" },
-  { value: "komplet", label: "Komplet knjiga" },
+  { value: "zbirka", label: "Zbirka" },
+  { value: "komplet", label: "Komplet" },
   { value: "ostalo", label: "Ostalo" },
 ];
+
+function Pilula({
+  aktivna,
+  onClick,
+  children,
+}: {
+  aktivna: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={aktivna}
+      className={`rounded-full border px-3.5 py-2 text-xs font-medium transition-colors ${
+        aktivna
+          ? "border-akcent-border bg-akcent-soft text-akcent"
+          : "border-input bg-secondary text-muted-foreground hover:text-foreground"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function Oznaka({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="w-16 font-mono text-[10px] tracking-[0.14em] text-muted-foreground">
+      {children}
+    </span>
+  );
+}
 
 export function FilterBar({ smerovi }: { smerovi: Smer[] }) {
   const router = useRouter();
@@ -35,20 +65,14 @@ export function FilterBar({ smerovi }: { smerovi: Smer[] }) {
   const smerId = searchParams.get("smer_id");
   const godina = searchParams.get("godina");
   const tip = searchParams.get("tip");
-
-  const cenaMinParam = searchParams.get("cena_min") ?? "";
-  const cenaMaxParam = searchParams.get("cena_max") ?? "";
+  const besplatno = searchParams.get("besplatno") === "1";
   const pretragaParam = searchParams.get("pretraga") ?? "";
 
-  const [cenaMin, setCenaMin] = useState(cenaMinParam);
-  const [cenaMax, setCenaMax] = useState(cenaMaxParam);
   const [pretraga, setPretraga] = useState(pretragaParam);
   const [sinhronizovanoSa, setSinhronizovanoSa] = useState(searchParams.toString());
 
   if (sinhronizovanoSa !== searchParams.toString()) {
     setSinhronizovanoSa(searchParams.toString());
-    setCenaMin(cenaMinParam);
-    setCenaMax(cenaMaxParam);
     setPretraga(pretragaParam);
   }
 
@@ -65,96 +89,75 @@ export function FilterBar({ smerovi }: { smerovi: Smer[] }) {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      const trenutniMin = searchParams.get("cena_min") ?? "";
-      const trenutniMax = searchParams.get("cena_max") ?? "";
-      const trenutnaPretraga = searchParams.get("pretraga") ?? "";
-      if (
-        cenaMin !== trenutniMin ||
-        cenaMax !== trenutniMax ||
-        pretraga !== trenutnaPretraga
-      ) {
-        postaviParametre({
-          cena_min: cenaMin || null,
-          cena_max: cenaMax || null,
-          pretraga: pretraga || null,
-        });
+      if (pretraga !== (searchParams.get("pretraga") ?? "")) {
+        postaviParametre({ pretraga: pretraga || null });
       }
     }, 400);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cenaMin, cenaMax, pretraga]);
+  }, [pretraga]);
 
-  const imaAktivneFiltere =
-    smerId || godina || tip || cenaMin || cenaMax || pretraga;
-
-  function ocistiFiltere() {
-    setCenaMin("");
-    setCenaMax("");
-    setPretraga("");
-    router.push(pathname, { scroll: false });
-  }
+  const imaAktivneFiltere = smerId || godina || tip || besplatno || pretraga;
 
   return (
-    <div className="mb-6 flex flex-col gap-4 rounded-xl border bg-secondary p-4 sm:flex-row sm:flex-wrap sm:items-end">
-      <div className="flex flex-col gap-1.5 sm:w-64">
-        <Label htmlFor="filter_pretraga">Pretraga</Label>
-        <Input
-          id="filter_pretraga"
+    <div className="mb-8 flex flex-col gap-4">
+      <div className="flex items-center gap-2 rounded-full border border-border bg-card py-1.5 pl-5 pr-2">
+        <input
           type="text"
-          placeholder="Naziv ili opis oglasa..."
           value={pretraga}
           onChange={(e) => setPretraga(e.target.value)}
+          placeholder="Naziv, predmet ili opis…"
+          aria-label="Pretraga oglasa"
+          className="min-w-0 flex-1 bg-transparent py-2.5 text-sm font-light text-foreground outline-none placeholder:text-muted-foreground"
         />
+        <span className="pr-3 font-mono text-[11px] text-muted-foreground">↵</span>
       </div>
 
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="filter_godina">Godina</Label>
-        <Select
-          value={godina}
-          onValueChange={(v) => postaviParametre({ godina: v })}
-          items={GODINE.map((g) => ({ value: String(g), label: `${g}. godina` }))}
+      <div className="flex flex-wrap items-center gap-2">
+        <Oznaka>GODINA</Oznaka>
+        {GODINE.map((g) => (
+          <Pilula
+            key={g}
+            aktivna={godina === String(g)}
+            onClick={() =>
+              postaviParametre({ godina: godina === String(g) ? null : String(g) })
+            }
+          >
+            {g}.
+          </Pilula>
+        ))}
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <Oznaka>TIP</Oznaka>
+        {TIPOVI.map((t) => (
+          <Pilula
+            key={t.value}
+            aktivna={tip === t.value}
+            onClick={() => postaviParametre({ tip: tip === t.value ? null : t.value })}
+          >
+            {t.label}
+          </Pilula>
+        ))}
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <Oznaka>OSTALO</Oznaka>
+        <Pilula
+          aktivna={besplatno}
+          onClick={() => postaviParametre({ besplatno: besplatno ? null : "1" })}
         >
-          <SelectTrigger id="filter_godina" className="w-full sm:w-32">
-            <SelectValue placeholder="Sve godine" />
-          </SelectTrigger>
-          <SelectContent>
-            {GODINE.map((g) => (
-              <SelectItem key={g} value={String(g)}>
-                {g}. godina
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="filter_tip">Tip materijala</Label>
-        <Select
-          value={tip}
-          onValueChange={(v) => postaviParametre({ tip: v })}
-          items={TIPOVI}
-        >
-          <SelectTrigger id="filter_tip" className="w-full sm:w-44">
-            <SelectValue placeholder="Svi tipovi" />
-          </SelectTrigger>
-          <SelectContent>
-            {TIPOVI.map((t) => (
-              <SelectItem key={t.value} value={t.value}>
-                {t.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="filter_smer">Smer (opciono)</Label>
+          Samo besplatno
+        </Pilula>
         <Select
           value={smerId}
           onValueChange={(v) => postaviParametre({ smer_id: v })}
           items={smerovi.map((s) => ({ value: s.id, label: s.naziv }))}
         >
-          <SelectTrigger id="filter_smer" className="w-full sm:w-44">
+          <SelectTrigger
+            id="filter_smer"
+            className="h-auto w-full rounded-full border-input bg-secondary px-3.5 py-2 text-xs sm:w-52"
+          >
             <SelectValue placeholder="Svi smerovi" />
           </SelectTrigger>
           <SelectContent>
@@ -165,41 +168,19 @@ export function FilterBar({ smerovi }: { smerovi: Smer[] }) {
             ))}
           </SelectContent>
         </Select>
+        {imaAktivneFiltere && (
+          <button
+            type="button"
+            onClick={() => {
+              setPretraga("");
+              router.push(pathname, { scroll: false });
+            }}
+            className="rounded-full border border-input px-3.5 py-2 text-xs font-medium text-muted-foreground hover:text-foreground"
+          >
+            Očisti sve
+          </button>
+        )}
       </div>
-
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="filter_cena_min">Cena od</Label>
-        <Input
-          id="filter_cena_min"
-          type="number"
-          min="0"
-          step="1"
-          placeholder="0"
-          className="w-full sm:w-24"
-          value={cenaMin}
-          onChange={(e) => setCenaMin(e.target.value)}
-        />
-      </div>
-
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="filter_cena_max">Cena do</Label>
-        <Input
-          id="filter_cena_max"
-          type="number"
-          min="0"
-          step="1"
-          placeholder="∞"
-          className="w-full sm:w-24"
-          value={cenaMax}
-          onChange={(e) => setCenaMax(e.target.value)}
-        />
-      </div>
-
-      {imaAktivneFiltere && (
-        <Button variant="outline" onClick={ocistiFiltere} className="sm:ml-auto">
-          Očisti filtere
-        </Button>
-      )}
     </div>
   );
 }

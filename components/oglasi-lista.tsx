@@ -66,8 +66,8 @@ export function OglasiLista({
   }
 
   if (oglasi.length === 0) {
-    const imaAktivneFiltere = Object.values(filteri).some(
-      (vrednost) => vrednost !== null && vrednost !== ""
+    const imaAktivneFiltere = Object.values(filteri).some((vrednost) =>
+      typeof vrednost === "boolean" ? vrednost : vrednost !== null && vrednost !== ""
     );
 
     return (

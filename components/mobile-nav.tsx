@@ -1,52 +1,39 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { usePathname } from "next/navigation";
 
-const NAV_LINKOVI = [
+const STAVKE = [
+  { href: "/", naziv: "Početna" },
   { href: "/oglasi", naziv: "Oglasi" },
   { href: "/besplatno", naziv: "Besplatno" },
   { href: "/sta-mi-treba", naziv: "Šta mi treba" },
+  { href: "/moj-profil", naziv: "Profil" },
 ];
 
-export function MobileNav({ jeAdmin = false }: { jeAdmin?: boolean }) {
-  const [otvoreno, setOtvoreno] = useState(false);
+/** Donja navigacija na telefonu (zamenjuje stari hamburger meni). */
+export function MobileNav() {
+  const pathname = usePathname();
 
   return (
-    <div className="sm:hidden">
-      <Button
-        variant="ghost"
-        size="icon"
-        aria-label={otvoreno ? "Zatvori meni" : "Otvori meni"}
-        onClick={() => setOtvoreno((v) => !v)}
-      >
-        {otvoreno ? <X className="size-5" /> : <Menu className="size-5" />}
-      </Button>
-      {otvoreno && (
-        <nav className="absolute inset-x-0 top-16 z-50 flex flex-col gap-4 border-b bg-background px-6 py-4 text-sm font-medium shadow-md animate-in fade-in slide-in-from-top-2 duration-200">
-          {NAV_LINKOVI.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setOtvoreno(false)}
-              className="text-foreground/80 hover:text-primary"
-            >
-              {link.naziv}
-            </Link>
-          ))}
-          {jeAdmin && (
-            <Link
-              href="/admin"
-              onClick={() => setOtvoreno(false)}
-              className="text-foreground/80 hover:text-primary"
-            >
-              Admin
-            </Link>
-          )}
-        </nav>
-      )}
-    </div>
+    <nav className="fixed inset-x-0 bottom-0 z-50 flex border-t border-border bg-background/95 px-2 py-2.5 backdrop-blur sm:hidden">
+      {STAVKE.map((s) => {
+        const aktivna = s.href === "/" ? pathname === "/" : pathname.startsWith(s.href);
+        return (
+          <Link
+            key={s.href}
+            href={s.href}
+            className={`flex flex-1 flex-col items-center gap-1.5 py-1 ${
+              aktivna ? "text-akcent" : "text-muted-foreground"
+            }`}
+          >
+            <span
+              className={`size-1.5 rounded-full ${aktivna ? "bg-akcent" : "bg-transparent"}`}
+            />
+            <span className="text-[10px] font-medium">{s.naziv}</span>
+          </Link>
+        );
+      })}
+    </nav>
   );
 }
