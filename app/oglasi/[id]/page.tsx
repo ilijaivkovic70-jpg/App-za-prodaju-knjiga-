@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { OcenaForma } from "@/components/ocena-forma";
+import { OglasVlasnikAkcije } from "@/components/oglas-vlasnik-akcije";
 
 const NAZIVI_TIPOVA: Record<string, string> = {
   knjiga: "Knjiga",
@@ -177,6 +178,8 @@ export default async function OglasDetaljPage({
               )}
             </CardContent>
           </Card>
+
+          {jeVlasnik && <OglasVlasnikAkcije oglasId={oglas.id} />}
 
           {!jeVlasnik &&
             (user ? (

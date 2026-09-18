@@ -15,7 +15,7 @@ import { sacuvajPotragu } from "@/lib/trazi-se/actions";
 type Smer = { id: string; fakultet_id: string; naziv: string };
 type Predmet = { id: string; smer_id: string; godina: number; naziv: string };
 
-const GODINE = [1, 2, 3, 4, 5, 6];
+const GODINE = [1, 2, 3, 4];
 
 export function StaMiTrebaWizard({
   smerovi,

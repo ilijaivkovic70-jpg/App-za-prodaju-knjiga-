@@ -20,7 +20,8 @@ import { kreirajOglas } from "@/lib/oglasi/actions";
 type Smer = { id: string; fakultet_id: string; naziv: string };
 type Predmet = { id: string; smer_id: string; godina: number; naziv: string };
 
-const GODINE = [1, 2, 3, 4, 5, 6];
+const GODINE = [1, 2, 3, 4];
+const NOVI_PREDMET_VREDNOST = "__novi__";
 
 const TIPOVI = [
   { value: "knjiga", label: "Knjiga" },
@@ -90,17 +91,6 @@ export function OglasForma({
 
   return (
     <form key={formKey} action={handleSubmit} className="flex flex-col gap-4">
-      {greska && (
-        <Alert variant="destructive">
-          <AlertDescription>{greska}</AlertDescription>
-        </Alert>
-      )}
-      {uspeh && (
-        <Alert>
-          <AlertDescription>Oglas je uspešno postavljen.</AlertDescription>
-        </Alert>
-      )}
-
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="tip">Tip materijala</Label>
         <Select name="tip" required items={TIPOVI}>
@@ -177,7 +167,10 @@ export function OglasForma({
           name="predmet_id"
           value={predmetId}
           onValueChange={setPredmetId}
-          items={predmetiZaFilter.map((p) => ({ value: p.id, label: p.naziv }))}
+          items={[
+            ...predmetiZaFilter.map((p) => ({ value: p.id, label: p.naziv })),
+            { value: NOVI_PREDMET_VREDNOST, label: "+ Upiši naziv predmeta" },
+          ]}
         >
           <SelectTrigger id="predmet_id" className="w-full">
             <SelectValue placeholder="Poveži sa predmetom sa liste" />
@@ -188,9 +181,25 @@ export function OglasForma({
                 {predmet.naziv}
               </SelectItem>
             ))}
+            <SelectItem value={NOVI_PREDMET_VREDNOST}>
+              + Upiši naziv predmeta
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>
+
+      {predmetId === NOVI_PREDMET_VREDNOST && (
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="novi_predmet_naziv">Naziv predmeta</Label>
+          <Input
+            id="novi_predmet_naziv"
+            name="novi_predmet_naziv"
+            type="text"
+            placeholder="npr. Mikroekonomija"
+            required
+          />
+        </div>
+      )}
 
       <div className="flex items-center gap-2">
         <Checkbox
@@ -222,6 +231,17 @@ export function OglasForma({
       <Button type="submit" disabled={pending} className="mt-2">
         {pending ? "Postavljanje..." : "Postavi oglas"}
       </Button>
+
+      {greska && (
+        <Alert variant="destructive">
+          <AlertDescription>{greska}</AlertDescription>
+        </Alert>
+      )}
+      {uspeh && (
+        <Alert>
+          <AlertDescription>Oglas je uspešno postavljen.</AlertDescription>
+        </Alert>
+      )}
     </form>
   );
 }

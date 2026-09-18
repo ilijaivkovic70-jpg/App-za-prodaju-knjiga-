@@ -16,6 +16,7 @@ const DOZVOLJENI_TIPOVI = [
 ] as const;
 
 const MAX_SLIKA_BAJTOVA = 5 * 1024 * 1024;
+const NOVI_PREDMET_VREDNOST = "__novi__";
 
 export async function kreirajOglas(formData: FormData): Promise<OglasRezultat> {
   const supabase = await createClient();
@@ -33,6 +34,7 @@ export async function kreirajOglas(formData: FormData): Promise<OglasRezultat> {
   const godinaRaw = String(formData.get("godina") ?? "");
   const godina = Number(godinaRaw);
   const predmetId = String(formData.get("predmet_id") ?? "").trim();
+  const noviPredmetNaziv = String(formData.get("novi_predmet_naziv") ?? "").trim();
   const besplatno = formData.get("besplatno") === "on";
   const cenaRaw = String(formData.get("cena") ?? "").trim();
   const opis = String(formData.get("opis") ?? "").trim();
@@ -46,6 +48,9 @@ export async function kreirajOglas(formData: FormData): Promise<OglasRezultat> {
   }
   if (!godinaRaw || Number.isNaN(godina) || godina < 1 || godina > 6) {
     return { error: "Izaberi godinu." };
+  }
+  if (predmetId === NOVI_PREDMET_VREDNOST && !noviPredmetNaziv) {
+    return { error: "Upiši naziv predmeta." };
   }
   if (!besplatno && !cenaRaw) {
     return { error: "Upiši cenu ili označi da je besplatno." };
@@ -62,6 +67,21 @@ export async function kreirajOglas(formData: FormData): Promise<OglasRezultat> {
     if ((slika as File).size > MAX_SLIKA_BAJTOVA) {
       return { error: "Slika ne sme biti veća od 5MB." };
     }
+  }
+
+  let konacniPredmetId = predmetId;
+
+  if (predmetId === NOVI_PREDMET_VREDNOST) {
+    const { data: noviPredmet, error: predmetGreska } = await supabase
+      .from("predmeti")
+      .insert({ smer_id: smerId || null, godina, naziv: noviPredmetNaziv })
+      .select("id")
+      .single();
+
+    if (predmetGreska || !noviPredmet) {
+      return { error: "Došlo je do greške pri dodavanju predmeta." };
+    }
+    konacniPredmetId = noviPredmet.id;
   }
 
   let slikaUrl: string | null = null;
@@ -90,7 +110,7 @@ export async function kreirajOglas(formData: FormData): Promise<OglasRezultat> {
     korisnik_id: user.id,
     tip,
     naziv,
-    predmet_id: predmetId || null,
+    predmet_id: konacniPredmetId || null,
     godina,
     smer_id: smerId || null,
     cena,

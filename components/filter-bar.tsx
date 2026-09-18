@@ -12,7 +12,7 @@ import {
 
 type Smer = { id: string; fakultet_id: string; naziv: string };
 
-const GODINE = [1, 2, 3, 4, 5, 6];
+const GODINE = [1, 2, 3, 4];
 
 const TIPOVI = [
   { value: "knjiga", label: "Knjiga" },
