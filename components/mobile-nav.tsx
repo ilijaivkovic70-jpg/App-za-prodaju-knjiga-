@@ -25,22 +25,23 @@ export function MobileNav({
     : STAVKE;
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-50 flex gap-1.5 border-t border-border bg-background/95 px-2 py-2.5 backdrop-blur sm:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-50 flex border-t border-border bg-background/95 px-2 py-2.5 backdrop-blur sm:hidden">
       {stavke.map((s) => {
         const aktivna = s.href === "/" ? pathname === "/" : pathname.startsWith(s.href);
         return (
           <Link
             key={s.href}
             href={s.href}
-            className={`relative flex flex-1 flex-col items-center gap-1 rounded-lg py-2 ${
-              aktivna
-                ? "bg-akcent/10 text-akcent"
-                : "text-muted-foreground"
+            className={`relative flex flex-1 flex-col items-center gap-1.5 py-1 ${
+              aktivna ? "text-akcent" : "text-muted-foreground"
             }`}
           >
-            <span className="text-xs font-semibold leading-tight">{s.naziv}</span>
+            <span
+              className={`size-1.5 rounded-full ${aktivna ? "bg-akcent" : "bg-transparent"}`}
+            />
+            <span className="text-[10px] font-medium">{s.naziv}</span>
             {s.href === "/poruke" && brojNeprocitanih > 0 && (
-              <span className="absolute right-[14%] top-0.5 flex size-3.5 items-center justify-center rounded-full bg-akcent text-[8px] font-semibold text-white">
+              <span className="absolute right-[18%] top-0 flex size-3.5 items-center justify-center rounded-full bg-akcent text-[8px] font-semibold text-white">
                 {brojNeprocitanih > 9 ? "9+" : brojNeprocitanih}
               </span>
             )}
