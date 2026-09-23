@@ -19,6 +19,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Nedostaje trazi_se_id." }, { status: 400 });
   }
 
+  const { data: potraga } = await supabase
+    .from("trazi_se")
+    .select("korisnik_id")
+    .eq("id", traziSeId)
+    .maybeSingle();
+
+  if (!potraga || potraga.korisnik_id !== user.id) {
+    return NextResponse.json({ error: "Neautorizovano." }, { status: 403 });
+  }
+
   const rezultat = await posaljiMatchObavestenja(supabase, traziSeId);
   return NextResponse.json(rezultat);
 }
