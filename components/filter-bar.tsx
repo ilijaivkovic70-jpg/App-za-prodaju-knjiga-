@@ -149,6 +149,7 @@ export function FilterBar({ smerovi }: { smerovi: Smer[] }) {
         >
           Samo besplatno
         </Pilula>
+        {smerovi.length > 0 && (
         <Select
           value={smerId}
           onValueChange={(v) => postaviParametre({ smer_id: v })}
@@ -168,6 +169,7 @@ export function FilterBar({ smerovi }: { smerovi: Smer[] }) {
             ))}
           </SelectContent>
         </Select>
+        )}
         {imaAktivneFiltere && (
           <button
             type="button"

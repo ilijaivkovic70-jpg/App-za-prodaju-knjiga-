@@ -17,7 +17,7 @@ export async function sacuvajPotragu(formData: FormData): Promise<void> {
   const godina = Number(godinaRaw);
   const predmetId = String(formData.get("predmet_id") ?? "");
 
-  if (!smerId || !predmetId || !godinaRaw || Number.isNaN(godina)) return;
+  if (!predmetId || !godinaRaw || Number.isNaN(godina)) return;
 
   const { data: potraga } = await supabase
     .from("trazi_se")
@@ -25,7 +25,7 @@ export async function sacuvajPotragu(formData: FormData): Promise<void> {
       korisnik_id: user.id,
       predmet_id: predmetId,
       godina,
-      smer_id: smerId,
+      smer_id: smerId || null,
     })
     .select("id")
     .single();

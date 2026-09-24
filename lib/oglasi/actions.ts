@@ -80,7 +80,12 @@ export async function kreirajOglas(formData: FormData): Promise<OglasRezultat> {
   if (predmetId === NOVI_PREDMET_VREDNOST) {
     const { data: noviPredmet, error: predmetGreska } = await supabase
       .from("predmeti")
-      .insert({ smer_id: smerId || null, godina, naziv: noviPredmetNaziv })
+      .insert({
+        smer_id: smerId || null,
+        fakultet_id: fakultet.id,
+        godina,
+        naziv: noviPredmetNaziv,
+      })
       .select("id")
       .single();
 

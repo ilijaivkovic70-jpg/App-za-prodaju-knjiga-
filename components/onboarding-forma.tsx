@@ -107,6 +107,7 @@ export function OnboardingForma({
         </Select>
       </div>
 
+      {(!fakultetId || smeroviZaFakultet.length > 0) && (
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="smer_id">Smer (opciono)</Label>
         <Select
@@ -132,6 +133,7 @@ export function OnboardingForma({
           </SelectContent>
         </Select>
       </div>
+      )}
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="telefon">Broj telefona (opciono)</Label>

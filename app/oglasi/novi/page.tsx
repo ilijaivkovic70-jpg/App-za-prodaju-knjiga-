@@ -22,7 +22,11 @@ export default async function NoviOglasPage() {
       .select("id, fakultet_id, naziv")
       .eq("fakultet_id", fakultetId)
       .order("naziv"),
-    supabase.from("predmeti").select("id, smer_id, godina, naziv").order("naziv"),
+    supabase
+      .from("predmeti")
+      .select("id, smer_id, godina, naziv")
+      .eq("fakultet_id", fakultetId)
+      .order("naziv"),
   ]);
 
   if (!user) {

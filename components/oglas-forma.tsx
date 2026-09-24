@@ -140,6 +140,7 @@ export function OglasForma({
         </Select>
       </div>
 
+      {smerovi.length > 0 && (
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="smer_id">Smer (opciono)</Label>
         <Select
@@ -160,6 +161,7 @@ export function OglasForma({
           </SelectContent>
         </Select>
       </div>
+      )}
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="predmet_id">Predmet (opciono)</Label>

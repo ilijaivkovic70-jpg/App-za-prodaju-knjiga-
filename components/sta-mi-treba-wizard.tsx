@@ -13,7 +13,7 @@ import {
 import { sacuvajPotragu } from "@/lib/trazi-se/actions";
 
 type Smer = { id: string; fakultet_id: string; naziv: string };
-type Predmet = { id: string; smer_id: string; godina: number; naziv: string };
+type Predmet = { id: string; smer_id: string | null; godina: number; naziv: string };
 
 const GODINE = [1, 2, 3, 4];
 
@@ -30,18 +30,21 @@ export function StaMiTrebaWizard({
   const [smerId, setSmerId] = useState<string | null>(null);
   const [predmetId, setPredmetId] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const imaSmerove = smerovi.length > 0;
 
   const predmetiZaSmerIGodinu = useMemo(
     () =>
       predmeti.filter(
-        (predmet) => predmet.smer_id === smerId && String(predmet.godina) === godina
+        (predmet) =>
+          (imaSmerove ? predmet.smer_id === smerId : true) &&
+          String(predmet.godina) === godina
       ),
-    [predmeti, smerId, godina]
+    [predmeti, smerId, godina, imaSmerove]
   );
 
   function izaberiGodinu(vrednost: string) {
     setGodina(vrednost);
-    setKorak(2);
+    setKorak(imaSmerove ? 2 : 3);
   }
 
   function izaberiSmer(vrednost: string | null) {
@@ -51,23 +54,22 @@ export function StaMiTrebaWizard({
 
   function izaberiPredmet(vrednost: string | null) {
     setPredmetId(vrednost);
-    if (!vrednost || !smerId || !godina) return;
+    if (!vrednost || (imaSmerove && !smerId) || !godina) return;
 
     const formData = new FormData();
-    formData.set("smer_id", smerId);
+    if (smerId) formData.set("smer_id", smerId);
     formData.set("godina", godina);
     formData.set("predmet_id", vrednost);
 
     startTransition(async () => {
       await sacuvajPotragu(formData);
-      router.push(
-        `/oglasi?smer_id=${smerId}&godina=${godina}&predmet_id=${vrednost}`
-      );
+      const smerDeo = smerId ? `smer_id=${smerId}&` : "";
+      router.push(`/oglasi?${smerDeo}godina=${godina}&predmet_id=${vrednost}`);
     });
   }
 
   function nazad() {
-    setKorak((k) => Math.max(1, k - 1));
+    setKorak((k) => (k === 3 && !imaSmerove ? 1 : Math.max(1, k - 1)));
   }
 
   return (
@@ -76,13 +78,17 @@ export function StaMiTrebaWizard({
         <span className={korak === 1 ? "font-semibold text-foreground" : ""}>
           1. Godina
         </span>
-        <span>›</span>
-        <span className={korak === 2 ? "font-semibold text-foreground" : ""}>
-          2. Smer
-        </span>
+        {imaSmerove && (
+          <>
+            <span>›</span>
+            <span className={korak === 2 ? "font-semibold text-foreground" : ""}>
+              2. Smer
+            </span>
+          </>
+        )}
         <span>›</span>
         <span className={korak === 3 ? "font-semibold text-foreground" : ""}>
-          3. Predmet
+          {imaSmerove ? "3." : "2."} Predmet
         </span>
       </div>
 
