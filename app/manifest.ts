@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "EKOF Knjige",
-    short_name: "EKOF Knjige",
-    description: "Kupovina i prodaja polovnih udžbenika za studente Ekonomskog fakulteta.",
+    name: "Indeks Knjige",
+    short_name: "Indeks Knjige",
+    description: "Kupovina i prodaja polovnih udžbenika za studente.",
     start_url: "/",
     display: "standalone",
     background_color: "#0b0b12",
