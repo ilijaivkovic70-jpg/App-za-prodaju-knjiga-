@@ -21,7 +21,7 @@ const mono = JetBrains_Mono({
   weight: ["400", "500"],
 });
 
-const NASLOV = "Indeks Knjige";
+const NASLOV = "Knjigomat";
 const OPIS =
   "Kupovina i prodaja polovnih udžbenika, skripti i beleški za studente fakulteta u Beogradu.";
 

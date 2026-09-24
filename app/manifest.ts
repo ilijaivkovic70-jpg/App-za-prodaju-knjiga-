@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Indeks Knjige",
-    short_name: "Indeks Knjige",
+    name: "Knjigomat",
+    short_name: "Knjigomat",
     description: "Kupovina i prodaja polovnih udžbenika za studente.",
     start_url: "/",
     display: "standalone",

@@ -24,7 +24,7 @@ export async function Navbar() {
     <header className="relative z-20">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-4 px-5 py-4">
         <Link href="/" className="text-lg font-bold tracking-[-0.02em]">
-          INDEKS <span className="text-akcent">KNJIGE</span>
+          KNJIGO<span className="text-akcent">MAT</span>
         </Link>
 
         <nav className="hidden rounded-full border border-border bg-secondary p-1.5 sm:flex">

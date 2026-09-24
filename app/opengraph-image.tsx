@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Indeks Knjige";
+export const alt = "Knjigomat";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -44,7 +44,7 @@ export default async function Image() {
             E
           </div>
           <div style={{ fontSize: 28, fontWeight: 600, color: "#111827" }}>
-            Indeks Knjige
+            Knjigomat
           </div>
         </div>
         <div

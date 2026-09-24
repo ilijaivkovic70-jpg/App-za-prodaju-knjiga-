@@ -10,7 +10,7 @@ self.addEventListener("push", (event) => {
     podaci = { body: event.data ? event.data.text() : "" };
   }
   event.waitUntil(
-    self.registration.showNotification(podaci.title || "Indeks Knjige", {
+    self.registration.showNotification(podaci.title || "Knjigomat", {
       body: podaci.body || "Imaš novu poruku.",
       icon: "/pwa-icon/192",
       badge: "/pwa-icon/192",
