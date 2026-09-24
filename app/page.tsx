@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { trenutniFakultet } from "@/lib/fakultet/trenutni";
+import { dohvatiFakultete, trenutniFakultet } from "@/lib/fakultet/trenutni";
+import { FakultetBiraci } from "@/components/fakultet-biraci";
 import { OglasKartica, type OglasZaKarticu } from "@/components/oglas-kartica";
 
 const PREDNOSTI = [
@@ -35,7 +36,8 @@ const BRZI_FILTERI = [
 
 export default async function Home() {
   const supabase = await createClient();
-  const fakultetId = (await trenutniFakultet())?.id ?? "";
+  const [fakulteti, fakultet] = await Promise.all([dohvatiFakultete(), trenutniFakultet()]);
+  const fakultetId = fakultet?.id ?? "";
   const { data: oglasi } = await supabase
     .from("oglasi")
     .select("id, tip, naziv, cena, besplatno, godina, slika_url, smerovi(naziv)")
@@ -62,9 +64,13 @@ export default async function Home() {
           <span className="text-akcent">od starijih studenata</span>
         </h1>
 
+        {fakultet && (
+          <FakultetBiraci fakulteti={fakulteti} izabraniId={fakultet.id} />
+        )}
+
         <form
           action="/oglasi"
-          className="mx-auto mt-8 flex max-w-[640px] items-center gap-2.5 rounded-full border border-border bg-card py-2 pl-5 pr-2 senka-panel"
+          className="mx-auto mt-6 flex max-w-[640px] items-center gap-2.5 rounded-full border border-border bg-card py-2 pl-5 pr-2 senka-panel"
         >
           <input
             type="text"
