@@ -33,6 +33,8 @@ export const metadata: Metadata = {
   metadataBase: new URL(SAJT_URL),
   title: NASLOV,
   description: OPIS,
+  icons: { apple: "/pwa-icon/180" },
+  appleWebApp: { capable: true, title: NASLOV },
   openGraph: {
     title: NASLOV,
     description: OPIS,

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { trenutniKorisnik } from "@/lib/auth/current-user";
 import { Card, CardContent } from "@/components/ui/card";
+import { PushObavestenja } from "@/components/push-obavestenja";
 
 type Konverzacija = {
   oglas_id: string;
@@ -40,7 +41,8 @@ export default async function PorukePage() {
 
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8">
-      <h1 className="mb-6 text-[32px] font-bold">Poruke</h1>
+      <h1 className="mb-4 text-[32px] font-bold">Poruke</h1>
+      <PushObavestenja />
 
       {lista.length === 0 ? (
         <p className="py-12 text-center text-muted-foreground">

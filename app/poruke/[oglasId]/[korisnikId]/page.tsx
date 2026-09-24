@@ -36,13 +36,22 @@ export default async function PorukeNitPage({
       .eq("procitano", false),
     supabase
       .from("poruke")
-      .select("id, posiljalac_id, sadrzaj, created_at")
+      .select("id, posiljalac_id, sadrzaj, created_at, odgovor_na_id")
       .eq("oglas_id", oglasId)
       .or(
         `and(posiljalac_id.eq.${user.id},primalac_id.eq.${korisnikId}),and(posiljalac_id.eq.${korisnikId},primalac_id.eq.${user.id})`
       )
       .order("created_at", { ascending: true }),
   ]);
+
+  const porukeIds = (poruke ?? []).map((p) => p.id);
+  const { data: reakcije } =
+    porukeIds.length > 0
+      ? await supabase
+          .from("poruke_reakcije")
+          .select("id, poruka_id, korisnik_id, emoji")
+          .in("poruka_id", porukeIds)
+      : { data: [] };
 
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8">
@@ -69,6 +78,7 @@ export default async function PorukeNitPage({
         sagovornikId={korisnikId}
         trenutniKorisnikId={user.id}
         pocetnePoruke={poruke ?? []}
+        pocetneReakcije={reakcije ?? []}
       />
     </main>
   );
