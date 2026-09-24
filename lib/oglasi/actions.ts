@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { trenutniFakultet } from "@/lib/fakultet/trenutni";
 
 type OglasRezultat = { error: string } | { success: true };
 
@@ -69,6 +70,11 @@ export async function kreirajOglas(formData: FormData): Promise<OglasRezultat> {
     }
   }
 
+  const fakultet = await trenutniFakultet();
+  if (!fakultet) {
+    return { error: "Izaberi fakultet." };
+  }
+
   let konacniPredmetId = predmetId;
 
   if (predmetId === NOVI_PREDMET_VREDNOST) {
@@ -113,6 +119,7 @@ export async function kreirajOglas(formData: FormData): Promise<OglasRezultat> {
     predmet_id: konacniPredmetId || null,
     godina,
     smer_id: smerId || null,
+    fakultet_id: fakultet.id,
     cena,
     besplatno,
     opis: opis || null,

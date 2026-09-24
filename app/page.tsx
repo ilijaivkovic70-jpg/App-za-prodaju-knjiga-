@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { trenutniFakultet } from "@/lib/fakultet/trenutni";
 import { OglasKartica, type OglasZaKarticu } from "@/components/oglas-kartica";
 
 const PREDNOSTI = [
@@ -34,10 +35,12 @@ const BRZI_FILTERI = [
 
 export default async function Home() {
   const supabase = await createClient();
+  const fakultetId = (await trenutniFakultet())?.id ?? "";
   const { data: oglasi } = await supabase
     .from("oglasi")
     .select("id, tip, naziv, cena, besplatno, godina, slika_url, smerovi(naziv)")
     .eq("status", "aktivan")
+    .eq("fakultet_id", fakultetId)
     .order("created_at", { ascending: false })
     .limit(4);
 

@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { postaviFakultet } from "@/lib/fakultet/actions";
 
 type OnboardingRezultat = { error: string } | undefined;
 
@@ -55,6 +56,7 @@ export async function sacuvajProfil(
     return { error: "Došlo je do greške pri čuvanju profila. Pokušajte ponovo." };
   }
 
+  await postaviFakultet(fakultetId);
   revalidatePath("/", "layout");
   redirect("/");
 }

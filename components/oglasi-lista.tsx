@@ -18,11 +18,13 @@ export function OglasiLista({
   ukupno,
   filteri,
   samoBesplatno = false,
+  fakultetId,
 }: {
   pocetniOglasi: OglasZaKarticu[];
   ukupno: number;
   filteri: OglasiFilteri;
   samoBesplatno?: boolean;
+  fakultetId: string;
 }) {
   const [oglasi, setOglasi] = useState(pocetniOglasi);
   const [ucitava, setUcitava] = useState(false);
@@ -47,7 +49,8 @@ export function OglasiLista({
         .select(
           "id, tip, naziv, cena, besplatno, godina, slika_url, smerovi(naziv)"
         )
-        .eq("status", "aktivan"),
+        .eq("status", "aktivan")
+        .eq("fakultet_id", fakultetId),
       filteri,
       predmetIdsZaPretragu
     );

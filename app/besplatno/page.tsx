@@ -1,12 +1,14 @@
 import { createClient } from "@/lib/supabase/server";
 import { OglasiLista } from "@/components/oglasi-lista";
 import type { OglasZaKarticu } from "@/components/oglas-kartica";
+import { trenutniFakultet } from "@/lib/fakultet/trenutni";
 import { PRAZNI_FILTERI } from "@/lib/oglasi/filteri";
 
 const STRANA_VELICINA = 12;
 
 export default async function BesplatnoPage() {
   const supabase = await createClient();
+  const fakultetId = (await trenutniFakultet())?.id ?? "";
 
   const { data: oglasi, count } = await supabase
     .from("oglasi")
@@ -16,6 +18,7 @@ export default async function BesplatnoPage() {
     )
     .eq("status", "aktivan")
     .eq("besplatno", true)
+    .eq("fakultet_id", fakultetId)
     .order("created_at", { ascending: false })
     .range(0, STRANA_VELICINA - 1);
 
@@ -27,6 +30,7 @@ export default async function BesplatnoPage() {
         ukupno={count ?? 0}
         filteri={PRAZNI_FILTERI}
         samoBesplatno
+        fakultetId={fakultetId}
       />
     </main>
   );

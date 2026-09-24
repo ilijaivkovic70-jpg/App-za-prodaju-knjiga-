@@ -1,16 +1,22 @@
 import { createClient } from "@/lib/supabase/server";
+import { trenutniFakultet } from "@/lib/fakultet/trenutni";
 import { StaMiTrebaWizard } from "@/components/sta-mi-treba-wizard";
 
 export default async function StaMiTrebaPage() {
   const supabase = await createClient();
+  const fakultetId = (await trenutniFakultet())?.id ?? "";
 
-  const [{ data: smerovi }, { data: predmeti }] = await Promise.all([
-    supabase.from("smerovi").select("id, fakultet_id, naziv").order("naziv"),
-    supabase
-      .from("predmeti")
-      .select("id, smer_id, godina, naziv")
-      .order("naziv"),
-  ]);
+  const { data: smerovi } = await supabase
+    .from("smerovi")
+    .select("id, fakultet_id, naziv")
+    .eq("fakultet_id", fakultetId)
+    .order("naziv");
+
+  const { data: predmeti } = await supabase
+    .from("predmeti")
+    .select("id, smer_id, godina, naziv")
+    .in("smer_id", (smerovi ?? []).map((s) => s.id))
+    .order("naziv");
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center px-4 py-12">

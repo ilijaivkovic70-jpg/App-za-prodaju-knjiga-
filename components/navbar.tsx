@@ -4,6 +4,8 @@ import { trenutniKorisnik } from "@/lib/auth/current-user";
 import { brojNeprocitanihPoruka } from "@/lib/poruke/unread";
 import { LogoutDugme } from "@/components/logout-dugme";
 import { TemaPrekidac } from "@/components/tema-prekidac";
+import { FakultetPrekidac } from "@/components/fakultet-prekidac";
+import { dohvatiFakultete, trenutniFakultet } from "@/lib/fakultet/trenutni";
 
 const NAV_LINKOVI = [
   { href: "/oglasi", naziv: "Oglasi" },
@@ -16,6 +18,7 @@ export async function Navbar() {
   const jeAdmin = jeAdminEmail(user?.email);
   const inicijal = (user?.email ?? "?").charAt(0).toUpperCase();
   const brojNeprocitanih = user ? await brojNeprocitanihPoruka(user.id) : 0;
+  const [fakulteti, fakultet] = await Promise.all([dohvatiFakultete(), trenutniFakultet()]);
 
   return (
     <header className="relative z-20">
@@ -58,6 +61,9 @@ export async function Navbar() {
         </nav>
 
         <div className="ml-auto flex items-center gap-3">
+          {fakultet && (
+            <FakultetPrekidac fakulteti={fakulteti} izabraniId={fakultet.id} />
+          )}
           <div className="hidden sm:block">
             <TemaPrekidac />
           </div>
