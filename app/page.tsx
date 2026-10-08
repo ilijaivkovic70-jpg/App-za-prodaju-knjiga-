@@ -38,13 +38,24 @@ export default async function Home() {
   const supabase = await createClient();
   const [fakulteti, fakultet] = await Promise.all([dohvatiFakultete(), trenutniFakultet()]);
   const fakultetId = fakultet?.id ?? "";
-  const { data: oglasi } = await supabase
-    .from("oglasi")
-    .select("id, tip, naziv, cena, besplatno, godina, slika_url, smerovi(naziv)")
-    .eq("status", "aktivan")
-    .eq("fakultet_id", fakultetId)
-    .order("created_at", { ascending: false })
-    .limit(4);
+  const [{ data: oglasi }, { count: brojOglasa }, { count: brojStudenata }] = await Promise.all([
+    supabase
+      .from("oglasi")
+      .select("id, tip, naziv, cena, besplatno, godina, slika_url, smerovi(naziv)")
+      .eq("status", "aktivan")
+      .eq("fakultet_id", fakultetId)
+      .order("obnovljeno_at", { ascending: false })
+      .limit(4),
+    supabase
+      .from("oglasi")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "aktivan")
+      .eq("fakultet_id", fakultetId),
+    supabase
+      .from("profiles")
+      .select("id", { count: "exact", head: true })
+      .eq("fakultet_id", fakultetId),
+  ]);
 
   return (
     <div className="relative overflow-hidden">
@@ -98,6 +109,22 @@ export default async function Home() {
             </Link>
           ))}
         </div>
+
+        {((brojOglasa ?? 0) > 0 || (brojStudenata ?? 0) > 0) && (
+          <p className="mt-7 text-[12px] font-light text-muted-foreground/70">
+            {(brojOglasa ?? 0) > 0 && (
+              <>
+                {brojOglasa} aktivn{brojOglasa === 1 ? "i oglas" : "a oglasa"}
+              </>
+            )}
+            {(brojOglasa ?? 0) > 0 && (brojStudenata ?? 0) > 0 && " · "}
+            {(brojStudenata ?? 0) > 0 && (
+              <>
+                {brojStudenata} student{brojStudenata === 1 ? "" : "a"} na platformi
+              </>
+            )}
+          </p>
+        )}
       </section>
 
       {oglasi && oglasi.length > 0 && (

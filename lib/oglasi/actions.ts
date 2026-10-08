@@ -264,6 +264,57 @@ export async function promeniStatusOglasa(formData: FormData): Promise<OglasRezu
   return { success: true };
 }
 
+const OBNOVA_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000;
+
+export async function obnoviOglas(formData: FormData): Promise<OglasRezultat> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/prijava");
+  }
+
+  const oglasId = String(formData.get("oglas_id") ?? "");
+  if (!oglasId) {
+    return { error: "Nedostaje oglas." };
+  }
+
+  const { data: oglas } = await supabase
+    .from("oglasi")
+    .select("obnovljeno_at")
+    .eq("id", oglasId)
+    .eq("korisnik_id", user.id)
+    .maybeSingle();
+
+  if (!oglas) {
+    return { error: "Oglas nije pronađen." };
+  }
+
+  const protekloMs = Date.now() - new Date(oglas.obnovljeno_at).getTime();
+  if (protekloMs < OBNOVA_COOLDOWN_MS) {
+    return { error: "Oglas možeš obnoviti tek 7 dana od prethodne obnove." };
+  }
+
+  const { error } = await supabase
+    .from("oglasi")
+    .update({ obnovljeno_at: new Date().toISOString() })
+    .eq("id", oglasId)
+    .eq("korisnik_id", user.id);
+
+  if (error) {
+    return { error: "Došlo je do greške pri obnavljanju oglasa." };
+  }
+
+  revalidatePath("/");
+  revalidatePath("/oglasi");
+  revalidatePath("/besplatno");
+  revalidatePath(`/oglasi/${oglasId}`);
+  revalidatePath("/moj-profil");
+  return { success: true };
+}
+
 export async function obrisiOglas(formData: FormData): Promise<OglasRezultat> {
   const supabase = await createClient();
   const {

@@ -56,7 +56,7 @@ export function OglasiLista({
     );
     if (samoBesplatno) upit = upit.eq("besplatno", true);
     const { data } = await upit
-      .order("created_at", { ascending: false })
+      .order("obnovljeno_at", { ascending: false })
       .range(oglasi.length, oglasi.length + STRANA_VELICINA - 1);
 
     if (data) {

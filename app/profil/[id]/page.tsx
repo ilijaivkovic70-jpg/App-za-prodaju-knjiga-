@@ -45,7 +45,7 @@ export default async function JavniProfilPage({
         .select("id, tip, naziv, cena, besplatno, godina, slika_url, smerovi(naziv)")
         .eq("korisnik_id", id)
         .eq("status", "aktivan")
-        .order("created_at", { ascending: false }),
+        .order("obnovljeno_at", { ascending: false }),
     ]);
 
   if (!profil) {

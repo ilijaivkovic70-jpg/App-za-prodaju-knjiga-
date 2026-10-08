@@ -19,7 +19,7 @@ export default async function BesplatnoPage() {
     .eq("status", "aktivan")
     .eq("besplatno", true)
     .eq("fakultet_id", fakultetId)
-    .order("created_at", { ascending: false })
+    .order("obnovljeno_at", { ascending: false })
     .range(0, STRANA_VELICINA - 1);
 
   return (

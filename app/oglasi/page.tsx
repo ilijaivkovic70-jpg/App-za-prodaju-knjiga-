@@ -43,7 +43,7 @@ export default async function OglasiPage({
       filteri,
       predmetIdsZaPretragu
     )
-      .order("created_at", { ascending: false })
+      .order("obnovljeno_at", { ascending: false })
       .range(0, STRANA_VELICINA - 1),
   ]);
 

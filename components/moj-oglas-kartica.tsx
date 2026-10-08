@@ -6,7 +6,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { promeniStatusOglasa, obrisiOglas } from "@/lib/oglasi/actions";
+import { promeniStatusOglasa, obrisiOglas, obnoviOglas } from "@/lib/oglasi/actions";
 
 const NAZIVI_TIPOVA: Record<string, string> = {
   knjiga: "Knjiga",
@@ -32,13 +32,36 @@ export type MojOglas = {
   godina: number;
   slika_url: string | null;
   status: string;
+  obnovljeno_at: string;
 };
+
+const OBNOVA_COOLDOWN_DANA = 7;
 
 export function MojOglasKartica({ oglas }: { oglas: MojOglas }) {
   const router = useRouter();
   const [pendingStatus, startStatusTransition] = useTransition();
   const [pendingBrisanje, startBrisanjeTransition] = useTransition();
+  const [pendingObnova, startObnovaTransition] = useTransition();
   const [greska, setGreska] = useState<string | null>(null);
+
+  const protekloDana =
+    (Date.now() - new Date(oglas.obnovljeno_at).getTime()) / (1000 * 60 * 60 * 24);
+  const mozeObnova = protekloDana >= OBNOVA_COOLDOWN_DANA;
+  const preostaloDana = Math.ceil(OBNOVA_COOLDOWN_DANA - protekloDana);
+
+  function obnovi() {
+    setGreska(null);
+    startObnovaTransition(async () => {
+      const formData = new FormData();
+      formData.set("oglas_id", oglas.id);
+      const rezultat = await obnoviOglas(formData);
+      if (rezultat && "error" in rezultat) {
+        setGreska(rezultat.error);
+        return;
+      }
+      router.refresh();
+    });
+  }
 
   function promeniStatus(status: string) {
     setGreska(null);
@@ -125,6 +148,25 @@ export function MojOglasKartica({ oglas }: { oglas: MojOglas }) {
             <Button render={<Link href={`/oglasi/${oglas.id}/izmeni`} />} variant="outline" size="sm">
               Izmeni
             </Button>
+            {oglas.status === "aktivan" && (
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!mozeObnova || pendingObnova}
+                title={
+                  mozeObnova
+                    ? "Vrati oglas na vrh liste"
+                    : `Obnova je moguća za ${preostaloDana} ${preostaloDana === 1 ? "dan" : "dana"}`
+                }
+                onClick={obnovi}
+              >
+                {pendingObnova
+                  ? "Obnavljanje..."
+                  : mozeObnova
+                    ? "Obnovi oglas"
+                    : `Obnova za ${preostaloDana} ${preostaloDana === 1 ? "dan" : "dana"}`}
+              </Button>
+            )}
             {oglas.status === "aktivan" ? (
               <Button
                 variant="outline"

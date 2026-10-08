@@ -1,0 +1,716 @@
+<!doctype html>
+<html lang="sr" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>EKOF Knjige — Brag</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #08070d;
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        font-family: "Montserrat", sans-serif;
+        color: #f4f2f8;
+      }
+
+      :root {
+        --bg: #08070d;
+        --card: #14121c;
+        --fg: #f4f2f8;
+        --muted: #a09caf;
+        --accent: #cdb4f6;
+        --border: rgba(255, 255, 255, 0.1);
+        --grad: linear-gradient(100deg, #6d28d9, #b026c9);
+        --problem: #ff6f61;
+      }
+
+      .clip {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+      }
+      .fill {
+        position: absolute;
+        inset: 0;
+      }
+
+      .mono {
+        font-family: "JetBrains Mono", monospace;
+      }
+
+      /* ---------- shared glow ---------- */
+      .glow {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 1400px;
+        height: 1000px;
+        background: radial-gradient(
+          ellipse at center,
+          rgba(190, 140, 245, 0.55) 0%,
+          rgba(200, 110, 230, 0.22) 42%,
+          rgba(8, 7, 13, 0) 72%
+        );
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+      }
+
+      /* ---------- scene: hook ---------- */
+      #scene-hook .bg {
+        background: #050308;
+      }
+      .hook-wrap {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 22px;
+      }
+      .hook-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 22px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.04);
+        font-size: 22px;
+        letter-spacing: 0.14em;
+        color: #a09caf;
+        text-transform: uppercase;
+      }
+      .hook-badge .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: var(--problem);
+      }
+      .bubbles {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        width: 780px;
+      }
+      .bubble {
+        align-self: flex-start;
+        max-width: 640px;
+        padding: 16px 24px;
+        border-radius: 22px 22px 22px 6px;
+        background: #17151f;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: #cfc9db;
+        font-size: 28px;
+        font-weight: 500;
+        will-change: transform, opacity;
+      }
+      .bubble.b2 {
+        align-self: flex-end;
+        border-radius: 22px 22px 6px 22px;
+      }
+      .stamp-wrap {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        pointer-events: none;
+      }
+      .stamp {
+        max-width: 1360px;
+        text-align: center;
+        font-family: "Montserrat", sans-serif;
+        font-weight: 900;
+        font-size: 68px;
+        line-height: 1.12;
+        letter-spacing: -0.01em;
+        color: var(--problem);
+        opacity: 0;
+        will-change: transform, opacity;
+      }
+
+      /* ---------- scene: reveal ---------- */
+      #scene-reveal .bg {
+        background: var(--bg);
+      }
+      .reveal-wrap {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 26px;
+        text-align: center;
+      }
+      .kicker {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 24px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--muted);
+        opacity: 0;
+        will-change: transform, opacity;
+      }
+      .wordmark {
+        font-family: "Montserrat", sans-serif;
+        font-weight: 900;
+        font-size: 128px;
+        letter-spacing: -0.03em;
+        opacity: 0;
+        will-change: transform, opacity;
+      }
+      .wordmark .accent {
+        color: var(--accent);
+      }
+      .reveal-sub {
+        max-width: 1180px;
+        font-size: 42px;
+        font-weight: 500;
+        line-height: 1.28;
+        color: #d9d4e4;
+        opacity: 0;
+        will-change: transform, opacity;
+      }
+
+      /* ---------- shared highlight chrome ---------- */
+      .hl-caption {
+        position: absolute;
+        top: 96px;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-size: 50px;
+        font-weight: 700;
+        letter-spacing: -0.015em;
+        color: var(--fg);
+        opacity: 0;
+        will-change: transform, opacity;
+      }
+      .hl-stage {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding-top: 60px;
+      }
+
+      /* ---------- scene: highlight 1 (search + filters) ---------- */
+      #scene-h1 .bg {
+        background: var(--bg);
+      }
+      .search-col {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 34px;
+      }
+      .search-pill {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        width: 1180px;
+        padding: 14px 14px 14px 38px;
+        border-radius: 999px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+        opacity: 0;
+        will-change: transform, opacity;
+      }
+      .search-pill .ph {
+        flex: 1;
+        font-size: 30px;
+        color: var(--muted);
+        font-weight: 300;
+      }
+      .search-pill .btn {
+        padding: 20px 42px;
+        border-radius: 999px;
+        background: var(--grad);
+        color: #fff;
+        font-weight: 700;
+        font-size: 24px;
+      }
+      .pill-row {
+        display: flex;
+        gap: 16px;
+      }
+      .filter-pill {
+        padding: 16px 30px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: #17151f;
+        color: var(--muted);
+        font-size: 24px;
+        font-weight: 500;
+        opacity: 0;
+        will-change: transform, opacity;
+      }
+      .filter-pill.active {
+        color: var(--accent);
+        border-color: rgba(205, 180, 246, 0.45);
+        background: rgba(205, 180, 246, 0.1);
+      }
+
+      /* ---------- scene: highlight 2 (grid) ---------- */
+      #scene-h2 .bg {
+        background: var(--bg);
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(4, 320px);
+        gap: 28px;
+      }
+      .card {
+        border-radius: 26px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        opacity: 0;
+        will-change: transform, opacity;
+      }
+      .card .thumb {
+        position: relative;
+        height: 200px;
+        border-radius: 16px;
+        overflow: hidden;
+        background-image: repeating-linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.06) 0 10px,
+          rgba(255, 255, 255, 0.02) 10px 20px
+        );
+      }
+      .card .badge {
+        position: absolute;
+        left: 12px;
+        top: 12px;
+        padding: 7px 12px;
+        border-radius: 999px;
+        background: rgba(8, 7, 13, 0.72);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 15px;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+      }
+      .card .title {
+        font-size: 24px;
+        font-weight: 600;
+        line-height: 1.25;
+      }
+      .card .meta {
+        font-size: 17px;
+        color: var(--muted);
+        font-weight: 300;
+      }
+      .card .price {
+        font-size: 28px;
+        font-weight: 700;
+      }
+      .card .price.free {
+        color: var(--accent);
+      }
+
+      /* ---------- scene: highlight 3 (wizard) ---------- */
+      #scene-h3 .bg {
+        background: var(--bg);
+      }
+      .wizard-col {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 56px;
+      }
+      .steps {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+      }
+      .step {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 18px 30px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: #17151f;
+        opacity: 0.4;
+        will-change: transform, opacity;
+      }
+      .step .num {
+        width: 40px;
+        height: 40px;
+        border-radius: 999px;
+        display: grid;
+        place-items: center;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 20px;
+        font-weight: 700;
+        background: rgba(205, 180, 246, 0.14);
+        color: var(--accent);
+      }
+      .step .lbl {
+        font-size: 26px;
+        font-weight: 600;
+        color: var(--fg);
+      }
+      .connector {
+        width: 60px;
+        height: 2px;
+        background: var(--border);
+      }
+      .match-card {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 26px 44px;
+        border-radius: 22px;
+        background: var(--card);
+        border: 1px solid rgba(205, 180, 246, 0.35);
+        opacity: 0;
+        will-change: transform, opacity;
+      }
+      .match-card .check {
+        width: 52px;
+        height: 52px;
+        border-radius: 999px;
+        background: var(--grad);
+        display: grid;
+        place-items: center;
+      }
+      .match-card .txt {
+        font-size: 30px;
+        font-weight: 600;
+      }
+
+      /* ---------- scene: outro ---------- */
+      #scene-outro .bg {
+        background: var(--bg);
+      }
+      .outro-wrap {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 30px;
+      }
+      .outro-word {
+        font-family: "Montserrat", sans-serif;
+        font-weight: 900;
+        font-size: 108px;
+        letter-spacing: -0.03em;
+        opacity: 0;
+        will-change: transform, opacity;
+      }
+      .outro-word .accent {
+        color: var(--accent);
+      }
+      .outro-tag {
+        font-size: 38px;
+        font-weight: 600;
+        color: var(--muted);
+        opacity: 0;
+        will-change: transform, opacity;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="ekof-brag"
+      data-start="0"
+      data-width="1920"
+      data-height="1080"
+      data-duration="19.5"
+    >
+      <!-- SCENE 1: HOOK — 0 to 2.5s -->
+      <section id="scene-hook" class="clip" data-start="0" data-duration="2.5" data-track-index="0">
+        <div class="fill bg"></div>
+        <div class="hook-wrap" id="hook-wrap">
+          <span class="hook-badge"><span class="dot"></span>VIBER · GRUPA ZA KNJIGE</span>
+          <div class="bubbles">
+            <div class="bubble b1" id="b1">trazi se mikro 2, hitno</div>
+            <div class="bubble b2" id="b2">prodajem skripte za 500 din</div>
+            <div class="bubble b1" id="b3">koma, jos neko trazi racunovodstvo?</div>
+            <div class="bubble b2" id="b4">cet vec ima 400+ poruka</div>
+          </div>
+        </div>
+        <div class="stamp-wrap">
+          <p class="stamp" id="stamp">Nema skrolovanja kroz 400 Viber poruka.</p>
+        </div>
+      </section>
+
+      <!-- SCENE 2: REVEAL — 2.5 to 5.5s -->
+      <section id="scene-reveal" class="clip" data-start="2.5" data-duration="3.0" data-track-index="0">
+        <div class="fill bg"></div>
+        <div class="glow" id="reveal-glow"></div>
+        <div class="reveal-wrap">
+          <p class="kicker" id="kicker">Ili &mdash;</p>
+          <h1 class="wordmark" id="wordmark-1">EKOF <span class="accent">KNJIGE</span></h1>
+          <p class="reveal-sub" id="reveal-sub">
+            Polovne knjige, skripte i beleške od starijih studenata
+          </p>
+        </div>
+      </section>
+
+      <!-- SCENE 3: HIGHLIGHT 1 — search + filters — 5.5 to 10.0s -->
+      <section id="scene-h1" class="clip" data-start="5.5" data-duration="4.5" data-track-index="0">
+        <div class="fill bg"></div>
+        <div class="glow" style="opacity: 0.35"></div>
+        <p class="hl-caption" id="h1-caption">Pretraga i filteri koji rade.</p>
+        <div class="hl-stage">
+          <div class="search-col">
+            <div class="search-pill" id="search-pill">
+              <span class="ph">Traži predmet, knjigu ili smer&hellip;</span>
+              <span class="btn">Traži</span>
+            </div>
+            <div class="pill-row">
+              <span class="filter-pill active" id="fp1">1. godina</span>
+              <span class="filter-pill" id="fp2">Skripte</span>
+              <span class="filter-pill" id="fp3">Komplet knjiga</span>
+              <span class="filter-pill" id="fp4">Samo besplatno</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCENE 4: HIGHLIGHT 2 — marketplace grid — 10.0 to 14.0s -->
+      <section id="scene-h2" class="clip" data-start="10" data-duration="4.0" data-track-index="0">
+        <div class="fill bg"></div>
+        <p class="hl-caption" id="h2-caption">Pravi oglasi, pravi studenti.</p>
+        <div class="hl-stage">
+          <div class="grid">
+            <div class="card" id="card1">
+              <div class="thumb"><span class="badge">SKRIPTA</span></div>
+              <div class="title">Mikroekonomija 2 — skripta</div>
+              <div class="meta">Finansije · 2. godina</div>
+              <div class="price">900 RSD</div>
+            </div>
+            <div class="card" id="card2">
+              <div class="thumb"><span class="badge">KNJIGA</span></div>
+              <div class="title">Računovodstvo — udžbenik</div>
+              <div class="meta">Računovodstvo · 1. godina</div>
+              <div class="price">1.400 RSD</div>
+            </div>
+            <div class="card" id="card3">
+              <div class="thumb"><span class="badge">BELEŠKE</span></div>
+              <div class="title">Statistika — kompletne beleške</div>
+              <div class="meta">Menadžment · 2. godina</div>
+              <div class="price free">Besplatno</div>
+            </div>
+            <div class="card" id="card4">
+              <div class="thumb"><span class="badge">KOMPLET</span></div>
+              <div class="title">Marketing — komplet knjiga</div>
+              <div class="meta">Marketing · 3. godina</div>
+              <div class="price free">Besplatno</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCENE 5: HIGHLIGHT 3 — matching wizard — 14.0 to 17.0s -->
+      <section id="scene-h3" class="clip" data-start="14" data-duration="3.0" data-track-index="0">
+        <div class="fill bg"></div>
+        <p class="hl-caption" id="h3-caption">Kažeš šta ti treba. Mi te spajamo.</p>
+        <div class="hl-stage">
+          <div class="wizard-col">
+            <div class="steps">
+              <div class="step" id="step1"><span class="num">1</span><span class="lbl">Godina</span></div>
+              <div class="connector"></div>
+              <div class="step" id="step2"><span class="num">2</span><span class="lbl">Smer</span></div>
+              <div class="connector"></div>
+              <div class="step" id="step3"><span class="num">3</span><span class="lbl">Predmet</span></div>
+            </div>
+            <div class="match-card" id="match-card">
+              <div class="check">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+                  <path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </div>
+              <span class="txt">3 oglasa pronađena za tebe</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCENE 6: OUTRO — 17.0 to 19.5s -->
+      <section id="scene-outro" class="clip" data-start="17" data-duration="2.5" data-track-index="0">
+        <div class="fill bg"></div>
+        <div class="glow" id="outro-glow"></div>
+        <div class="outro-wrap">
+          <h1 class="outro-word" id="wordmark-2">EKOF <span class="accent">KNJIGE</span></h1>
+          <p class="outro-tag" id="outro-tag">Kraj Viber haosa.</p>
+        </div>
+      </section>
+
+      <!-- AUDIO -->
+      <audio
+        id="music"
+        data-start="0"
+        data-duration="19.5"
+        data-track-index="10"
+        src="assets/music/happy-beats-business-moves-vol-1-by-ende-dot-app.mp3"
+        data-automation='{"version":1,"lanes":[{"target":"volume","points":[{"t":0,"v":0.05},{"t":2.35,"v":0.05},{"t":2.7,"v":0.36},{"t":16.8,"v":0.34},{"t":19,"v":0.18},{"t":19.5,"v":0}]}]}'
+      ></audio>
+
+      <audio id="sfx-blip-1" data-start="0.15" data-duration="0.1" data-track-index="11" data-volume="0.6" src="assets/sfx/interface/click_001.ogg"></audio>
+      <audio id="sfx-blip-2" data-start="0.55" data-duration="0.1" data-track-index="12" data-volume="0.6" src="assets/sfx/interface/click_001.ogg"></audio>
+      <audio id="sfx-blip-3" data-start="0.95" data-duration="0.1" data-track-index="13" data-volume="0.6" src="assets/sfx/interface/click_001.ogg"></audio>
+      <audio id="sfx-blip-4" data-start="1.35" data-duration="0.1" data-track-index="14" data-volume="0.6" src="assets/sfx/interface/click_001.ogg"></audio>
+      <audio id="sfx-stamp" data-start="1.65" data-duration="0.18" data-track-index="15" data-volume="0.8" src="assets/sfx/impact/impactSoft_medium_001.ogg"></audio>
+
+      <audio id="sfx-search" data-start="5.5" data-duration="0.11" data-track-index="16" data-volume="0.65" src="assets/sfx/interface/drop_001.ogg"></audio>
+      <audio id="sfx-pill1" data-start="6.5" data-duration="0.19" data-track-index="17" data-volume="0.55" src="assets/sfx/interface/drop_002.ogg"></audio>
+      <audio id="sfx-pill4" data-start="8.0" data-duration="0.19" data-track-index="18" data-volume="0.55" src="assets/sfx/interface/drop_002.ogg"></audio>
+
+      <audio id="sfx-card1" data-start="10.0" data-duration="0.11" data-track-index="19" data-volume="0.55" src="assets/sfx/interface/drop_001.ogg"></audio>
+      <audio id="sfx-card4" data-start="11.5" data-duration="0.11" data-track-index="20" data-volume="0.55" src="assets/sfx/interface/drop_001.ogg"></audio>
+
+      <audio id="sfx-step3" data-start="15.5" data-duration="0.19" data-track-index="21" data-volume="0.6" src="assets/sfx/interface/drop_002.ogg"></audio>
+
+      <audio id="sfx-outro" data-start="17.5" data-duration="1.2" data-track-index="22" data-volume="0.75" src="assets/sfx/impact/impactBell_heavy_000.ogg"></audio>
+    </div>
+
+    <script>
+      const tl = gsap.timeline({ paused: true });
+
+      /* ===== Scene 1: Hook (0 - 2.5) ===== */
+      tl.fromTo("#b1", { y: 26, opacity: 0 }, { y: 0, opacity: 1, duration: 0.32, ease: "power2.out" }, 0.15);
+      tl.fromTo("#b2", { y: 26, opacity: 0 }, { y: 0, opacity: 1, duration: 0.32, ease: "power2.out" }, 0.55);
+      tl.fromTo("#b3", { y: 26, opacity: 0 }, { y: 0, opacity: 1, duration: 0.32, ease: "power2.out" }, 0.95);
+      tl.fromTo("#b4", { y: 26, opacity: 0 }, { y: 0, opacity: 1, duration: 0.32, ease: "power2.out" }, 1.35);
+      tl.to("#hook-wrap", { opacity: 0, duration: 0.25, ease: "power1.in" }, 1.4);
+      tl.fromTo(
+        "#stamp",
+        { scale: 0.7, opacity: 0, rotation: -3 },
+        { scale: 1, opacity: 1, rotation: -1.5, duration: 0.4, ease: "back.out(2)" },
+        1.65
+      );
+      tl.to("#stamp", { opacity: 0, duration: 0.2, ease: "power1.in" }, 2.3);
+
+      /* ===== Scene 2: Reveal (2.5 - 5.5) ===== */
+      tl.fromTo("#kicker", { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3 }, 2.6);
+      tl.fromTo(
+        "#reveal-glow",
+        { opacity: 0, scale: 0.85 },
+        { opacity: 1, scale: 1, duration: 0.6, ease: "power2.out" },
+        2.55
+      );
+      // beat-locked: 3.02s (nearest usable beat to the reveal cut)
+      tl.fromTo(
+        "#wordmark-1",
+        { scale: 0.82, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.6)" },
+        3.02
+      );
+      tl.fromTo("#reveal-sub", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, 3.3);
+      tl.to(["#kicker", "#wordmark-1", "#reveal-sub"], { opacity: 0, duration: 0.25, ease: "power1.in" }, 5.3);
+      tl.to("#reveal-glow", { opacity: 0.5, duration: 0.25, ease: "power1.in" }, 5.3);
+
+      /* ===== Scene 3: Highlight 1 — search + filters (5.5 - 10.0) ===== */
+      tl.fromTo("#h1-caption", { y: -14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35 }, 5.55);
+      // beat-grid: search pill at 5.53s
+      tl.fromTo(
+        "#search-pill",
+        { y: 24, opacity: 0, scale: 0.96 },
+        { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.4)" },
+        5.53
+      );
+      // beat-grid: filter pills at 6.52, 7.02, 7.52, 8.02
+      tl.fromTo("#fp1", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.28, ease: "power2.out" }, 6.52);
+      tl.fromTo("#fp2", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.28, ease: "power2.out" }, 7.02);
+      tl.fromTo("#fp3", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.28, ease: "power2.out" }, 7.52);
+      tl.fromTo("#fp4", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.28, ease: "power2.out" }, 8.02);
+      tl.to(
+        ["#h1-caption", "#search-pill", "#fp1", "#fp2", "#fp3", "#fp4"],
+        { opacity: 0, duration: 0.25, ease: "power1.in" },
+        9.75
+      );
+
+      /* ===== Scene 4: Highlight 2 — grid (10.0 - 14.0) ===== */
+      tl.fromTo("#h2-caption", { y: -14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35 }, 10.05);
+      // beat-grid: cards at 10.02, 10.52, 11.02, 11.52
+      tl.fromTo(
+        "#card1",
+        { y: 28, opacity: 0, scale: 0.95 },
+        { y: 0, opacity: 1, scale: 1, duration: 0.34, ease: "back.out(1.3)" },
+        10.02
+      );
+      tl.fromTo(
+        "#card2",
+        { y: 28, opacity: 0, scale: 0.95 },
+        { y: 0, opacity: 1, scale: 1, duration: 0.34, ease: "back.out(1.3)" },
+        10.52
+      );
+      tl.fromTo(
+        "#card3",
+        { y: 28, opacity: 0, scale: 0.95 },
+        { y: 0, opacity: 1, scale: 1, duration: 0.34, ease: "back.out(1.3)" },
+        11.02
+      );
+      tl.fromTo(
+        "#card4",
+        { y: 28, opacity: 0, scale: 0.95 },
+        { y: 0, opacity: 1, scale: 1, duration: 0.34, ease: "back.out(1.3)" },
+        11.52
+      );
+      tl.to(["#h2-caption", "#card1", "#card2", "#card3", "#card4"], { opacity: 0, duration: 0.25, ease: "power1.in" }, 13.75);
+
+      /* ===== Scene 5: Highlight 3 — wizard (14.0 - 17.0) ===== */
+      tl.fromTo("#h3-caption", { y: -14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35 }, 14.05);
+      // beat-grid: steps at 14.52, 15.02, 15.52
+      tl.fromTo("#step1", { opacity: 0.4, scale: 0.94 }, { opacity: 1, scale: 1.04, duration: 0.22, ease: "power2.out" }, 14.52);
+      tl.to("#step1", { scale: 1, duration: 0.18, ease: "power1.out" }, 14.74);
+      tl.fromTo("#step2", { opacity: 0.4, scale: 0.94 }, { opacity: 1, scale: 1.04, duration: 0.22, ease: "power2.out" }, 15.02);
+      tl.to("#step2", { scale: 1, duration: 0.18, ease: "power1.out" }, 15.24);
+      tl.fromTo("#step3", { opacity: 0.4, scale: 0.94 }, { opacity: 1, scale: 1.04, duration: 0.22, ease: "power2.out" }, 15.52);
+      tl.to("#step3", { scale: 1, duration: 0.18, ease: "power1.out" }, 15.74);
+      tl.fromTo(
+        "#match-card",
+        { y: 20, opacity: 0, scale: 0.94 },
+        { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.5)" },
+        16.0
+      );
+      tl.to(
+        ["#h3-caption", "#step1", "#step2", "#step3", "#match-card"],
+        { opacity: 0, duration: 0.25, ease: "power1.in" },
+        16.75
+      );
+
+      /* ===== Scene 6: Outro (17.0 - 19.5) ===== */
+      tl.fromTo("#outro-glow", { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.5, ease: "power2.out" }, 17.05);
+      // beat-locked: 17.52s (second strong cue within the outro window)
+      tl.fromTo(
+        "#wordmark-2",
+        { scale: 0.82, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.6)" },
+        17.52
+      );
+      tl.fromTo("#outro-tag", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: "power2.out" }, 18.05);
+      tl.to(["#wordmark-2", "#outro-tag", "#outro-glow"], { opacity: 0, duration: 0.3, ease: "power1.in" }, 19.2);
+
+      window.__timelines["ekof-brag"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
