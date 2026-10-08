@@ -42,7 +42,9 @@ export default async function JavniProfilPage({
         .eq("ocenjeni_id", id),
       supabase
         .from("oglasi")
-        .select("id, tip, naziv, cena, besplatno, godina, slika_url, smerovi(naziv)")
+        .select(
+          "id, tip, naziv, cena, besplatno, godina, slika_url, smerovi(naziv), created_at, obnovljeno_at"
+        )
         .eq("korisnik_id", id)
         .eq("status", "aktivan")
         .order("obnovljeno_at", { ascending: false }),

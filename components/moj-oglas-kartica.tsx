@@ -32,10 +32,12 @@ export type MojOglas = {
   godina: number;
   slika_url: string | null;
   status: string;
+  created_at: string;
   obnovljeno_at: string;
 };
 
 const OBNOVA_COOLDOWN_DANA = 7;
+const DANA_PRIKAZA_OBNOVE = 3;
 
 export function MojOglasKartica({ oglas }: { oglas: MojOglas }) {
   const router = useRouter();
@@ -48,6 +50,10 @@ export function MojOglasKartica({ oglas }: { oglas: MojOglas }) {
     (Date.now() - new Date(oglas.obnovljeno_at).getTime()) / (1000 * 60 * 60 * 24);
   const mozeObnova = protekloDana >= OBNOVA_COOLDOWN_DANA;
   const preostaloDana = Math.ceil(OBNOVA_COOLDOWN_DANA - protekloDana);
+
+  const obnovljenNedavno =
+    new Date(oglas.obnovljeno_at).getTime() - new Date(oglas.created_at).getTime() > 60 * 1000 &&
+    protekloDana < DANA_PRIKAZA_OBNOVE;
 
   function obnovi() {
     setGreska(null);
@@ -129,6 +135,11 @@ export function MojOglasKartica({ oglas }: { oglas: MojOglas }) {
               >
                 {NAZIVI_STATUSA[oglas.status] ?? oglas.status}
               </span>
+              {obnovljenNedavno && (
+                <span className="ml-2 rounded-lg bg-primary px-2 py-0.5 text-xs font-semibold text-primary-foreground">
+                  Obnovljen
+                </span>
+              )}
             </p>
             <Link
               href={`/oglasi/${oglas.id}`}

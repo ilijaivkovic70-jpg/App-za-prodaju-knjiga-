@@ -10,7 +10,19 @@ export type OglasZaKarticu = {
   godina: number;
   slika_url: string | null;
   smerovi: { naziv: string } | { naziv: string }[] | null;
+  created_at?: string;
+  obnovljeno_at?: string;
 };
+
+const DANA_PRIKAZA_OBNOVE = 3;
+
+function jeNedavnoObnovljen(oglas: OglasZaKarticu) {
+  if (!oglas.created_at || !oglas.obnovljeno_at) return false;
+  const obnovljen = new Date(oglas.obnovljeno_at).getTime();
+  const kreiran = new Date(oglas.created_at).getTime();
+  const proteklo = Date.now() - obnovljen;
+  return obnovljen - kreiran > 60 * 1000 && proteklo < DANA_PRIKAZA_OBNOVE * 24 * 60 * 60 * 1000;
+}
 
 const NAZIVI_TIPOVA: Record<string, string> = {
   knjiga: "KNJIGA",
@@ -51,6 +63,11 @@ export function OglasKartica({ oglas }: { oglas: OglasZaKarticu }) {
         <span className="absolute left-2.5 top-2.5 rounded-full bg-background/75 px-2.5 py-1.5 font-mono text-[10px] tracking-[0.1em] text-muted-foreground backdrop-blur">
           {NAZIVI_TIPOVA[oglas.tip] ?? oglas.tip}
         </span>
+        {jeNedavnoObnovljen(oglas) && (
+          <span className="absolute right-2.5 top-2.5 rounded-full bg-akcent px-2.5 py-1.5 font-mono text-[10px] tracking-[0.1em] text-white backdrop-blur">
+            OBNOVLJEN
+          </span>
+        )}
       </div>
 
       <div className="flex flex-col gap-1.5 px-1 pb-1">

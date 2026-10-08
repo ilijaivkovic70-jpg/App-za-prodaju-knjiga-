@@ -15,7 +15,9 @@ export default async function MojProfilPage() {
 
   const { data: oglasi } = await supabase
     .from("oglasi")
-    .select("id, tip, naziv, cena, besplatno, godina, slika_url, status, obnovljeno_at")
+    .select(
+      "id, tip, naziv, cena, besplatno, godina, slika_url, status, created_at, obnovljeno_at"
+    )
     .eq("korisnik_id", user.id)
     .order("obnovljeno_at", { ascending: false });
 

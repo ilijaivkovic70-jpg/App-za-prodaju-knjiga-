@@ -47,7 +47,7 @@ export function OglasiLista({
       supabase
         .from("oglasi")
         .select(
-          "id, tip, naziv, cena, besplatno, godina, slika_url, smerovi(naziv)"
+          "id, tip, naziv, cena, besplatno, godina, slika_url, smerovi(naziv), created_at, obnovljeno_at"
         )
         .eq("status", "aktivan")
         .eq("fakultet_id", fakultetId),

@@ -13,7 +13,7 @@ export default async function BesplatnoPage() {
   const { data: oglasi, count } = await supabase
     .from("oglasi")
     .select(
-      "id, tip, naziv, cena, besplatno, godina, slika_url, smerovi(naziv)",
+      "id, tip, naziv, cena, besplatno, godina, slika_url, smerovi(naziv), created_at, obnovljeno_at",
       { count: "exact" }
     )
     .eq("status", "aktivan")

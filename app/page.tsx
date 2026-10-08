@@ -41,7 +41,9 @@ export default async function Home() {
   const [{ data: oglasi }, { count: brojOglasa }, { count: brojStudenata }] = await Promise.all([
     supabase
       .from("oglasi")
-      .select("id, tip, naziv, cena, besplatno, godina, slika_url, smerovi(naziv)")
+      .select(
+        "id, tip, naziv, cena, besplatno, godina, slika_url, smerovi(naziv), created_at, obnovljeno_at"
+      )
       .eq("status", "aktivan")
       .eq("fakultet_id", fakultetId)
       .order("obnovljeno_at", { ascending: false })
@@ -111,19 +113,20 @@ export default async function Home() {
         </div>
 
         {((brojOglasa ?? 0) > 0 || (brojStudenata ?? 0) > 0) && (
-          <p className="mt-7 text-[12px] font-light text-muted-foreground/70">
+          <div className="mt-7 flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 text-[13px] text-muted-foreground">
             {(brojOglasa ?? 0) > 0 && (
-              <>
-                {brojOglasa} aktivn{brojOglasa === 1 ? "i oglas" : "a oglasa"}
-              </>
+              <span className="inline-flex items-center gap-1.5">
+                <span className="font-semibold text-foreground">{brojOglasa}</span>
+                aktivn{brojOglasa === 1 ? "i oglas" : "a oglasa"}
+              </span>
             )}
-            {(brojOglasa ?? 0) > 0 && (brojStudenata ?? 0) > 0 && " · "}
             {(brojStudenata ?? 0) > 0 && (
-              <>
-                {brojStudenata} student{brojStudenata === 1 ? "" : "a"} na platformi
-              </>
+              <span className="inline-flex items-center gap-1.5">
+                <span className="font-semibold text-foreground">{brojStudenata}</span>
+                student{brojStudenata === 1 ? "" : "a"} na platformi
+              </span>
             )}
-          </p>
+          </div>
         )}
       </section>
 
