@@ -34,30 +34,57 @@ const BRZI_FILTERI = [
   { naziv: "Samo besplatno", href: "/besplatno" },
 ];
 
+function zaokruziNadole(broj: number, korak = 10) {
+  return Math.floor(broj / korak) * korak;
+}
+
 export default async function Home() {
   const supabase = await createClient();
   const [fakulteti, fakultet] = await Promise.all([dohvatiFakultete(), trenutniFakultet()]);
   const fakultetId = fakultet?.id ?? "";
-  const [{ data: oglasi }, { count: brojOglasa }, { count: brojStudenata }] = await Promise.all([
-    supabase
-      .from("oglasi")
-      .select(
-        "id, tip, naziv, cena, besplatno, godina, slika_url, smerovi(naziv), created_at, obnovljeno_at"
-      )
-      .eq("status", "aktivan")
-      .eq("fakultet_id", fakultetId)
-      .order("obnovljeno_at", { ascending: false })
-      .limit(4),
-    supabase
-      .from("oglasi")
-      .select("id", { count: "exact", head: true })
-      .eq("status", "aktivan")
-      .eq("fakultet_id", fakultetId),
-    supabase
-      .from("profiles")
-      .select("id", { count: "exact", head: true })
-      .eq("fakultet_id", fakultetId),
-  ]);
+  const [{ data: oglasi }, { count: brojOglasa }, { count: brojProdaja }, { count: brojStudenata }] =
+    await Promise.all([
+      supabase
+        .from("oglasi")
+        .select(
+          "id, tip, naziv, cena, besplatno, godina, slika_url, smerovi(naziv), created_at, obnovljeno_at"
+        )
+        .eq("status", "aktivan")
+        .eq("fakultet_id", fakultetId)
+        .order("obnovljeno_at", { ascending: false })
+        .limit(4),
+      supabase
+        .from("oglasi")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "aktivan")
+        .eq("fakultet_id", fakultetId),
+      supabase
+        .from("oglasi")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "prodato")
+        .eq("fakultet_id", fakultetId),
+      supabase
+        .from("profiles")
+        .select("id", { count: "exact", head: true })
+        .eq("fakultet_id", fakultetId),
+    ]);
+
+  const zaokruzenoOglasa = zaokruziNadole(brojOglasa ?? 0);
+  const STATISTIKE = [
+    (brojOglasa ?? 0) > 0 && {
+      vrednost:
+        zaokruzenoOglasa >= 10 ? `${zaokruzenoOglasa}+` : `${brojOglasa}`,
+      naziv: `${(brojOglasa ?? 0) === 1 ? "Oglas" : "Oglasa"} na platformi`,
+    },
+    (brojProdaja ?? 0) > 0 && {
+      vrednost: `${brojProdaja}`,
+      naziv: `Uspešn${brojProdaja === 1 ? "a prodaja" : "e prodaje"}`,
+    },
+    (brojStudenata ?? 0) > 0 && {
+      vrednost: `${brojStudenata}`,
+      naziv: `Student${brojStudenata === 1 ? "" : "a"} se priključilo`,
+    },
+  ].filter((s): s is { vrednost: string; naziv: string } => Boolean(s));
 
   return (
     <div className="relative overflow-hidden">
@@ -112,23 +139,27 @@ export default async function Home() {
           ))}
         </div>
 
-        {((brojOglasa ?? 0) > 0 || (brojStudenata ?? 0) > 0) && (
-          <div className="mt-7 flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 text-[13px] text-muted-foreground">
-            {(brojOglasa ?? 0) > 0 && (
-              <span className="inline-flex items-center gap-1.5">
-                <span className="font-semibold text-foreground">{brojOglasa}</span>
-                aktivn{brojOglasa === 1 ? "i oglas" : "a oglasa"}
-              </span>
-            )}
-            {(brojStudenata ?? 0) > 0 && (
-              <span className="inline-flex items-center gap-1.5">
-                <span className="font-semibold text-foreground">{brojStudenata}</span>
-                student{brojStudenata === 1 ? "" : "a"} na platformi
-              </span>
-            )}
-          </div>
-        )}
       </section>
+
+      {STATISTIKE.length > 0 && (
+        <section className="relative mx-auto w-full max-w-4xl px-5 pb-10">
+          <div className="grid grid-cols-1 divide-y divide-border overflow-hidden rounded-[22px] border border-akcent-border bg-akcent-soft sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+            {STATISTIKE.map((s) => (
+              <div
+                key={s.naziv}
+                className="flex flex-col items-center gap-1 px-6 py-6 text-center"
+              >
+                <span className="text-[clamp(28px,4vw,38px)] font-bold tracking-[-0.03em] text-akcent">
+                  {s.vrednost}
+                </span>
+                <span className="text-[13px] font-medium text-muted-foreground">
+                  {s.naziv}
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {oglasi && oglasi.length > 0 && (
         <section className="relative mx-auto w-full max-w-6xl px-5 py-6">
