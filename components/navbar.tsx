@@ -10,7 +10,7 @@ import { dohvatiFakultete, trenutniFakultet } from "@/lib/fakultet/trenutni";
 const NAV_LINKOVI = [
   { href: "/oglasi", naziv: "Oglasi" },
   { href: "/besplatno", naziv: "Besplatno" },
-  { href: "/sta-mi-treba", naziv: "Šta mi treba" },
+  { href: "/sta-mi-treba", naziv: "Indeks" },
 ];
 
 export async function Navbar() {

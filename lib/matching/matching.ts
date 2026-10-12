@@ -13,7 +13,7 @@ type MatchRed = {
 /**
  * Poredi jedan unos iz trazi_se sa postojećim aktivnim oglasima i šalje
  * email obaveštenje svakom prodavcu čiji oglas odgovara potrazi.
- * Poziva se odmah posle upisa u trazi_se (iz wizard-a "Šta mi treba"),
+ * Poziva se odmah posle upisa u trazi_se (iz Indeks agenta na /sta-mi-treba),
  * a dostupna je i preko POST /api/matching za ponovno pokretanje.
  */
 export async function posaljiMatchObavestenja(

@@ -7,7 +7,7 @@ const STAVKE = [
   { href: "/", naziv: "Početna" },
   { href: "/oglasi", naziv: "Oglasi" },
   { href: "/besplatno", naziv: "Besplatno" },
-  { href: "/sta-mi-treba", naziv: "Šta mi treba" },
+  { href: "/sta-mi-treba", naziv: "Indeks" },
   { href: "/moj-profil", naziv: "Profil" },
 ];
 
