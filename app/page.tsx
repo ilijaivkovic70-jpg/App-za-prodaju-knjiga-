@@ -4,29 +4,6 @@ import { dohvatiFakultete, trenutniFakultet } from "@/lib/fakultet/trenutni";
 import { FakultetBiraci } from "@/components/fakultet-biraci";
 import { OglasKartica, type OglasZaKarticu } from "@/components/oglas-kartica";
 
-const PREDNOSTI = [
-  {
-    br: "01",
-    naslov: "Filteri koji rade",
-    opis: "Godina, tip materijala, smer, cena. Nema skrolovanja kroz 400 Viber poruka.",
-  },
-  {
-    br: "02",
-    naslov: "Besplatna sekcija",
-    opis: "Skripte i beleške koje stariji studenti dele bez naknade.",
-  },
-  {
-    br: "03",
-    naslov: "Matching",
-    opis: "Upiši šta ti treba i dobijaš mejl čim se pojavi oglas za taj predmet.",
-  },
-  {
-    br: "04",
-    naslov: "Ocene i verifikacija",
-    opis: "Ocena posle svake razmene. Znaš s kim se nalaziš.",
-  },
-];
-
 const BRZI_FILTERI = [
   { naziv: "1. godina", href: "/oglasi?godina=1" },
   { naziv: "Skripte", href: "/oglasi?tip=skripta" },
@@ -187,24 +164,6 @@ export default async function Home() {
         </section>
       )}
 
-      <section className="relative mx-auto w-full max-w-6xl px-5 py-10">
-        <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
-          {PREDNOSTI.map((p) => (
-            <div
-              key={p.br}
-              className="flex flex-col gap-2.5 rounded-[20px] border border-border bg-card p-6"
-            >
-              <span className="font-mono text-[10px] tracking-[0.16em] text-akcent">
-                {p.br}
-              </span>
-              <h3 className="text-base font-medium">{p.naslov}</h3>
-              <p className="text-[13px] font-light leading-relaxed text-muted-foreground">
-                {p.opis}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
     </div>
   );
 }
