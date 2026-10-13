@@ -39,6 +39,19 @@ export type MojOglas = {
 const OBNOVA_COOLDOWN_DANA = 7;
 const DANA_PRIKAZA_OBNOVE = 3;
 
+// Van komponente da Date.now() ne bude pozvan direktno u render telu
+// (react-hooks/purity pravilo flaguje nečiste pozive unutar komponenti/hookova).
+function izracunajObnovu(oglas: Pick<MojOglas, "obnovljeno_at" | "created_at">) {
+  const protekloDana =
+    (Date.now() - new Date(oglas.obnovljeno_at).getTime()) / (1000 * 60 * 60 * 24);
+  const mozeObnova = protekloDana >= OBNOVA_COOLDOWN_DANA;
+  const preostaloDana = Math.ceil(OBNOVA_COOLDOWN_DANA - protekloDana);
+  const obnovljenNedavno =
+    new Date(oglas.obnovljeno_at).getTime() - new Date(oglas.created_at).getTime() > 60 * 1000 &&
+    protekloDana < DANA_PRIKAZA_OBNOVE;
+  return { mozeObnova, preostaloDana, obnovljenNedavno };
+}
+
 export function MojOglasKartica({ oglas }: { oglas: MojOglas }) {
   const router = useRouter();
   const [pendingStatus, startStatusTransition] = useTransition();
@@ -46,14 +59,7 @@ export function MojOglasKartica({ oglas }: { oglas: MojOglas }) {
   const [pendingObnova, startObnovaTransition] = useTransition();
   const [greska, setGreska] = useState<string | null>(null);
 
-  const protekloDana =
-    (Date.now() - new Date(oglas.obnovljeno_at).getTime()) / (1000 * 60 * 60 * 24);
-  const mozeObnova = protekloDana >= OBNOVA_COOLDOWN_DANA;
-  const preostaloDana = Math.ceil(OBNOVA_COOLDOWN_DANA - protekloDana);
-
-  const obnovljenNedavno =
-    new Date(oglas.obnovljeno_at).getTime() - new Date(oglas.created_at).getTime() > 60 * 1000 &&
-    protekloDana < DANA_PRIKAZA_OBNOVE;
+  const { mozeObnova, preostaloDana, obnovljenNedavno } = izracunajObnovu(oglas);
 
   function obnovi() {
     setGreska(null);
