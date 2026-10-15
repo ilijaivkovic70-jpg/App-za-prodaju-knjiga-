@@ -73,6 +73,30 @@ function ocistiZaOrFilter(tekst: string) {
   return tekst.replace(/[,()%]/g, " ").trim();
 }
 
+/**
+ * Deli tekst pretrage na reči i traži oglase koji sadrže SVAKU reč (u nazivu
+ * ili opisu, svejedno u kom polju i redosledu). Bez ovoga bi pretraga tražila
+ * ceo unet tekst kao jedan doslovan niz karaktera, pa npr. "pindajk mikro"
+ * ne bi pronašao oglas "Mikroekonomija - Pindajk" iako sadrži obe reči.
+ */
+function primeniPretraguPoRecima<T extends { or(uslovi: string): T }>(
+  upit: T,
+  tekst: string
+): T {
+  const reci = ocistiZaOrFilter(tekst)
+    .split(/\s+/)
+    .filter((rec) => rec.length >= 2);
+
+  if (reci.length === 0) {
+    return upit.or(`naziv.ilike.%${tekst}%,opis.ilike.%${tekst}%`);
+  }
+
+  return reci.reduce(
+    (trenutni, rec) => trenutni.or(`naziv.ilike.%${rec}%,opis.ilike.%${rec}%`),
+    upit
+  );
+}
+
 export async function POST(request: Request) {
   if (!process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json(
@@ -148,8 +172,7 @@ export async function POST(request: Request) {
         if (ulaz.godina) upit = upit.eq("godina", ulaz.godina);
         if (ulaz.besplatno) upit = upit.eq("besplatno", true);
         if (ulaz.tekst?.trim()) {
-          const tekst = ocistiZaOrFilter(ulaz.tekst);
-          upit = upit.or(`naziv.ilike.%${tekst}%,opis.ilike.%${tekst}%`);
+          upit = primeniPretraguPoRecima(upit, ulaz.tekst);
         }
 
         const { data } = await upit.order("obnovljeno_at", { ascending: false }).limit(6);
