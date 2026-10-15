@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -7,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { OcenaForma } from "@/components/ocena-forma";
 import { OglasVlasnikAkcije } from "@/components/oglas-vlasnik-akcije";
+import { OglasGalerija } from "@/components/oglas-galerija";
 
 const NAZIVI_TIPOVA: Record<string, string> = {
   knjiga: "Knjiga",
@@ -47,21 +47,34 @@ export default async function OglasDetaljPage({
     notFound();
   }
 
-  const [{ data: brojTrazenja }, { data: profil }, user] = await Promise.all([
-    oglas.predmet_id
-      ? supabase.rpc("broj_trazenja", {
-          p_predmet_id: oglas.predmet_id,
-          p_godina: oglas.godina,
-          p_smer_id: oglas.smer_id,
-        })
-      : Promise.resolve({ data: 0 }),
-    supabase
-      .from("profiles")
-      .select("user_id, ime, verifikovan, prosecna_ocena, godina, telefon, fakulteti(naziv)")
-      .eq("user_id", oglas.korisnik_id)
-      .maybeSingle(),
-    trenutniKorisnik(),
-  ]);
+  const [{ data: brojTrazenja }, { data: profil }, user, { data: dodatneSlike }] =
+    await Promise.all([
+      oglas.predmet_id
+        ? supabase.rpc("broj_trazenja", {
+            p_predmet_id: oglas.predmet_id,
+            p_godina: oglas.godina,
+            p_smer_id: oglas.smer_id,
+          })
+        : Promise.resolve({ data: 0 }),
+      supabase
+        .from("profiles")
+        .select("user_id, ime, verifikovan, prosecna_ocena, godina, telefon, fakulteti(naziv)")
+        .eq("user_id", oglas.korisnik_id)
+        .maybeSingle(),
+      trenutniKorisnik(),
+      supabase
+        .from("oglas_slike")
+        .select("url")
+        .eq("oglas_id", oglas.id)
+        .order("redosled"),
+    ]);
+
+  const sveSlike = [
+    ...(oglas.slika_url ? [oglas.slika_url] : []),
+    ...(dodatneSlike ?? [])
+      .map((s) => s.url)
+      .filter((url) => url !== oglas.slika_url),
+  ];
 
   const jeVlasnik = user?.id === oglas.korisnik_id;
 
@@ -84,26 +97,7 @@ export default async function OglasDetaljPage({
   return (
     <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8">
       <div className="grid gap-8 md:grid-cols-2">
-        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-muted">
-          {oglas.slika_url ? (
-            <Image
-              src={oglas.slika_url}
-              alt={oglas.naziv}
-              fill
-              className="object-cover"
-              sizes="(min-width: 768px) 50vw, 100vw"
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-              Bez slike
-            </div>
-          )}
-          {oglas.besplatno && (
-            <span className="absolute right-2 top-2 rounded-lg bg-success px-2 py-1 text-xs font-semibold text-success-foreground">
-              BESPLATNO
-            </span>
-          )}
-        </div>
+        <OglasGalerija slike={sveSlike} naslov={oglas.naziv} besplatno={oglas.besplatno} />
 
         <div className="flex flex-col gap-4">
           <div>

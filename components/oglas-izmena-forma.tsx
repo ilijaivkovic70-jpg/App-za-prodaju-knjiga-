@@ -93,8 +93,8 @@ export function OglasIzmenaForma({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="slika">Nova slika (opciono)</Label>
-        <Input id="slika" name="slika" type="file" accept="image/*" />
+        <Label htmlFor="slike">Dodaj slike (opciono, do 6)</Label>
+        <Input id="slike" name="slike" type="file" accept="image/*" multiple />
       </div>
 
       <Button type="submit" disabled={pending} className="mt-2">
